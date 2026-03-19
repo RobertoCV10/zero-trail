@@ -11,7 +11,16 @@ const DB_URI = process.env.MONGO_URI;
 const DB_NAME = process.env.DB_NAME || 'proyecto_db';
 
 // --- MIDDLEWARE ---
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://tu-proyecto.vercel.app', // <--- REEMPLAZA CON TU URL DE VERCEL
+    'http://localhost:5173',          // Para pruebas locales con Vite
+    'http://localhost:3000'           // Para pruebas locales tradicionales
+  ],
+  methods: ['GET'], // Solo permitimos lectura para mayor seguridad
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Conexión optimizada
@@ -123,3 +132,4 @@ app.get('/api/grouped-items', async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`📡 Servidor listo en puerto ${PORT}`);
 });
+
