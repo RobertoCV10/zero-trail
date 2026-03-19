@@ -10,14 +10,15 @@ const PORT = process.env.PORT || 5000;
 const DB_URI = process.env.MONGO_URI;
 const DB_NAME = process.env.DB_NAME || 'proyecto_db';
 
-// --- MIDDLEWARE ---
+// --- MIDDLEWARE CORS ACTUALIZADO ---
 app.use(cors({
   origin: [
-    'https://zero-trail.vercel.app', // <--- REEMPLAZA CON TU URL DE VERCEL
-    'http://localhost:5173',          // Para pruebas locales con Vite
-    'http://localhost:3000'           // Para pruebas locales tradicionales
+    'https://zero-trail.vercel.app',            // Tu dominio principal
+    /\.vercel\.app$/,                          // <--- ESTO PERMITE TODOS TUS DEPLOYMENTS DE VERCEL
+    'http://localhost:5173', 
+    'http://localhost:3000'
   ],
-  methods: ['GET'], // Solo permitimos lectura para mayor seguridad
+  methods: ['GET'],
   credentials: true
 }));
 
