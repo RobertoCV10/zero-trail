@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: app_vehiculos_backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app           # Conecta tu código de Windows con el contenedor
+      - /app/node_modules        # Protege las librerías internas del contenedor
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: app_vehiculos_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend

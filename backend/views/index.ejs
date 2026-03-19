@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visor de Vehículos</title>
+    <style>
+        body { font-family: Arial; margin: 40px; background: #f8f9fa; }
+        table { width: 100%; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; border: 1px solid #dee2e6; text-align: left; }
+        th { background: #343a40; color: white; }
+        tr:nth-child(even) { background: #fff; }
+    </style>
+</head>
+<body>
+    <h1>Lista de Vehículos (MongoDB)</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Año</th>
+                <th>Precio (USD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% vehiculos.forEach(v => { %>
+                <tr>
+                    <td><%= v.Manufacturer %></td>
+                    <td><%= v.Model %></td>
+                    <td><%= v.Year %></td>
+                    <td>$<%= v.Price_USD %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</body>
+</html>
