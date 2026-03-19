@@ -13,10 +13,10 @@ const DB_NAME = process.env.DB_NAME || 'proyecto_db';
 // --- MIDDLEWARE CORS ACTUALIZADO ---
 app.use(cors({
   origin: [
-    'https://zero-trail.vercel.app',            // Tu dominio principal
-    /\.vercel\.app$/,                          // <--- ESTO PERMITE TODOS TUS DEPLOYMENTS DE VERCEL
-    'http://localhost:5173', 
-    'http://localhost:3000'
+    'https://zero-trail.vercel.app',            // Tu dominio principal (Domains)
+    /\.vercel\.app$/,                          // <--- Acepta CUALQUIER deployment de Vercel
+    'http://localhost:5173',                   // Vite local
+    'http://localhost:3000'                    // CRA local
   ],
   methods: ['GET'],
   credentials: true
