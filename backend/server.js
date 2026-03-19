@@ -13,7 +13,7 @@ const DB_NAME = process.env.DB_NAME || 'proyecto_db';
 // --- MIDDLEWARE ---
 app.use(cors({
   origin: [
-    'https://tu-proyecto.vercel.app', // <--- REEMPLAZA CON TU URL DE VERCEL
+    'https://zero-trail-is7ond9f8-robertocv10s-projects.vercel.app/', // <--- REEMPLAZA CON TU URL DE VERCEL
     'http://localhost:5173',          // Para pruebas locales con Vite
     'http://localhost:3000'           // Para pruebas locales tradicionales
   ],
