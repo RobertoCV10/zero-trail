@@ -38,20 +38,25 @@ function LamborghiniRevuelto() {
   const [selectedImg,   setSelectedImg]   = useState(null);
 
   useEffect(() => {
-    const fetchSpecs = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`http://localhost:5000/items?busqueda=Revuelto&limit=20`);
-        const data     = await response.json();
-        setCarData(data.items || []);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSpecs();
-  }, []);
+      const fetchSpecs = async () => {
+        setLoading(true);
+        try {
+          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const response = await fetch(`${API_URL}/items?busqueda=Revuelto&limit=20`);
+          
+          if (!response.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
+          
+          const data = await response.json();
+          setCarData(data.items || []);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchSpecs();
+    }, []);
 
   const specs2025 = useMemo(() =>
     carData.find(item => Number(item.Year) === 2025) || carData[0] || {}

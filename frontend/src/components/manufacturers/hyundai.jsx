@@ -92,19 +92,28 @@ function HyundaiPage() {
   }, []);
 
   useEffect(() => {
-    const fetchHyundai = async () => {
-      try {
-        const res  = await fetch('http://localhost:5000/items?busqueda=hyundai&limit=100');
-        const data = await res.json();
-        setItems(data.items);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHyundai();
-  }, []);
+      const fetchHyundai = async () => {
+        // Iniciamos el estado de carga para feedback visual
+        if (setLoading) setLoading(true); 
+        
+        try {
+          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const res = await fetch(`${API_URL}/items?busqueda=hyundai&limit=100`);
+          
+          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
+          
+          const data = await res.json();
+          // El check || [] evita que .map() falle si la base de datos devuelve null
+          setItems(data.items || []); 
+        } catch (e) {
+          console.error("Error en Fetch Hyundai:", e);
+        } finally {
+          if (setLoading) setLoading(false);
+        }
+      };
+      fetchHyundai();
+    }, []);
 
   const groupedHyundai = useMemo(() => {
     const groups = {};

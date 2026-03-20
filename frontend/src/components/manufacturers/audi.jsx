@@ -70,19 +70,25 @@ function AudiPage() {
   const brandFooterRef = useRef(null);
 
   useEffect(() => {
-    const fetchAudi = async () => {
-      try {
-        const res  = await fetch('http://localhost:5000/items?busqueda=audi&limit=100');
-        const data = await res.json();
-        setItems(data.items);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAudi();
-  }, []);
+      const fetchAudi = async () => {
+        setLoading(true); // Asegúrate de tener este estado para mostrar el spinner
+        try {
+          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const res = await fetch(`${API_URL}/items?busqueda=audi&limit=100`);
+          
+          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
+          
+          const data = await res.json();
+          setItems(data.items || []);
+        } catch (e) {
+          console.error("Error en Fetch Audi:", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchAudi();
+    }, []);
 
   // Brand bar se oculta cuando el footer de marca entra en vista
   useEffect(() => {

@@ -45,20 +45,25 @@ function AudiETronGT() {
   const [selectedImg,   setSelectedImg]   = useState(null);
 
   useEffect(() => {
-    const fetchSpecs = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`http://localhost:5000/items?busqueda=e-tron%20GT&limit=20`);
-        const data     = await response.json();
-        setCarData(data.items || []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSpecs();
-  }, []);
+      const fetchSpecs = async () => {
+        setLoading(true);
+        try {
+          // --- CAMBIO A PRODUCCIÓN ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const response = await fetch(`${API_URL}/items?busqueda=e-tron%20GT&limit=20`);
+          
+          if (!response.ok) throw new Error('Error al conectar con el servidor de Render');
+          
+          const data = await response.json();
+          setCarData(data.items || []);
+        } catch (error) {
+          console.error("Error en Fetch e-tron GT:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchSpecs();
+    }, []);
 
   const specs2025 = useMemo(() =>
     carData.find(item => Number(item.Year) === 2025) || carData[0] || {}

@@ -102,19 +102,28 @@ function BydPage() {
   }, []);
 
   useEffect(() => {
-    const fetchByd = async () => {
-      try {
-        const res  = await fetch('http://localhost:5000/items?busqueda=byd&limit=100');
-        const data = await res.json();
-        setItems(data.items);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchByd();
-  }, []);
+      const fetchByd = async () => {
+        // Asegúrate de iniciar el loading si tienes el estado definido
+        if (setLoading) setLoading(true); 
+        
+        try {
+          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const res = await fetch(`${API_URL}/items?busqueda=byd&limit=100`);
+          
+          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
+          
+          const data = await res.json();
+          // Agregamos el check de seguridad || [] para evitar errores de mapeo
+          setItems(data.items || []); 
+        } catch (e) {
+          console.error("Error en Fetch BYD:", e);
+        } finally {
+          if (setLoading) setLoading(false);
+        }
+      };
+      fetchByd();
+    }, []);
 
   const groupedByd = useMemo(() => {
     const groups = {};

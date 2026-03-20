@@ -89,19 +89,28 @@ function NissanPage() {
   }, []);
 
   useEffect(() => {
-    const fetchNissan = async () => {
-      try {
-        const res  = await fetch('http://localhost:5000/items?busqueda=nissan&limit=100');
-        const data = await res.json();
-        setItems(data.items);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNissan();
-  }, []);
+      const fetchNissan = async () => {
+        // Iniciamos el estado de carga para feedback visual
+        if (setLoading) setLoading(true); 
+        
+        try {
+          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const res = await fetch(`${API_URL}/items?busqueda=nissan&limit=100`);
+          
+          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
+          
+          const data = await res.json();
+          // El check || [] evita errores de mapeo si la base de datos devuelve null
+          setItems(data.items || []); 
+        } catch (e) {
+          console.error("Error en Fetch Nissan:", e);
+        } finally {
+          if (setLoading) setLoading(false);
+        }
+      };
+      fetchNissan();
+    }, []);
 
   const groupedNissan = useMemo(() => {
     const groups = {};

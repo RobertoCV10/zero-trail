@@ -72,19 +72,27 @@ function TeslaPage() {
   }, []);
 
   useEffect(() => {
-    const fetchTesla = async () => {
-      try {
-        const res  = await fetch('http://localhost:5000/items?busqueda=tesla&limit=100');
-        const data = await res.json();
-        setItems(data.items);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTesla();
-  }, []);
+      const fetchTesla = async () => {
+        if (setLoading) setLoading(true); 
+        
+        try {
+          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const res = await fetch(`${API_URL}/items?busqueda=tesla&limit=100`);
+          
+          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
+          
+          const data = await res.json();
+          // El check || [] evita errores de .map() si la respuesta es nula
+          setItems(data.items || []); 
+        } catch (e) {
+          console.error("Error en Fetch Tesla:", e);
+        } finally {
+          if (setLoading) setLoading(false);
+        }
+      };
+      fetchTesla();
+    }, []);
 
   const groupedTesla = useMemo(() => {
     const groups = {};

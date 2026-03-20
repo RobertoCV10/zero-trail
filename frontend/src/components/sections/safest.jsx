@@ -36,20 +36,26 @@ function SafetyElitePage() {
     sectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth' });
 
   useEffect(() => {
-    const fetchSafetyData = async () => {
-      setLoading(true);
-      try {
-        const res  = await fetch(`http://localhost:5000/items?limit=250`);
-        const data = await res.json();
-        setItems(data.items || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSafetyData();
-  }, []);
+      const fetchSafetyData = async () => {
+        setLoading(true);
+        try {
+          // --- CAMBIO A PRODUCCIÓN ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const res = await fetch(`${API_URL}/items?limit=250`);
+          
+          if (!res.ok) throw new Error('Error al conectar con el servidor');
+          
+          const data = await res.json();
+          setItems(data.items || []);
+        } catch (e) {
+          console.error("Error en Safety Data:", e);
+          // Opcional: podrías setear un estado de error aquí
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchSafetyData();
+    }, []);
 
   const safetyTop5 = useMemo(() => {
     const groups = {};

@@ -92,17 +92,25 @@ function CybertruckPage() {
   }, []);
 
   useEffect(() => {
-    const fetchSpecs = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('http://localhost:5000/items?busqueda=Cybertruck&limit=50');
-        const data     = await response.json();
-        setCybertruckData(data.items || []);
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    };
-    fetchSpecs();
-  }, []);
+      const fetchSpecs = async () => {
+        setLoading(true);
+        try {
+          // --- CAMBIO A PRODUCCIÓN ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const response = await fetch(`${API_URL}/items?busqueda=Cybertruck&limit=50`);
+          
+          if (!response.ok) throw new Error('Error al obtener especificaciones de Cybertruck');
+          
+          const data = await response.json();
+          setCybertruckData(data.items || []);
+        } catch (e) { 
+          console.error("Error en Cybertruck Fetch:", e); 
+        } finally { 
+          setLoading(false); 
+        }
+      };
+      fetchSpecs();
+    }, []);
 
   const specs2025 = useMemo(() => (
     cybertruckData.find(i => Number(i.Year) === 2025 && i.Battery_Type === 'Magnesium-ion') ||

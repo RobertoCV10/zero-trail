@@ -38,20 +38,25 @@ function ValueChampionsPage() {
     sectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth' });
 
   useEffect(() => {
-    const fetchItems = async () => {
-      setLoading(true);
-      try {
-        const res  = await fetch(`http://localhost:5000/items?limit=300`);
-        const data = await res.json();
-        setItems(data.items || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchItems();
-  }, []);
+      const fetchItems = async () => {
+        setLoading(true);
+        try {
+          // --- CAMBIO A PRODUCCIÓN ---
+          const API_URL = "https://zero-trail-backend.onrender.com";
+          const res = await fetch(`${API_URL}/items?limit=250`);
+          
+          if (!res.ok) throw new Error('Error en la comunicación con el servidor');
+          
+          const data = await res.json();
+          setItems(data.items || []);
+        } catch (e) {
+          console.error("Error al obtener items:", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchItems();
+    }, []);
 
   const valueGroups = useMemo(() => {
     const groups = {};
