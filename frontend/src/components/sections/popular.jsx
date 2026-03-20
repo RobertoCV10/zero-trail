@@ -33,16 +33,25 @@ function PopularCarsPage() {
 
   const scrollToContent = () => contentRef.current?.scrollIntoView({ behavior: 'smooth' });
 
+  // --- Fetch de datos populares ---
   useEffect(() => {
     const fetchPopular = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams({ sortField: 'Units_Sold_2024', sortOrder: 'desc', limit: 150 });
-        const res  = await fetch(`http://localhost:5000/items?${params.toString()}`);
+        const params = new URLSearchParams({ 
+          sortField: 'Units_Sold_2024', 
+          sortOrder: 'desc', 
+          limit: 150 
+        });
+
+        // --- CAMBIO AQUÍ: Usamos la URL de Render ---
+        const API_URL = "https://zero-trail-backend.onrender.com"; 
+        const res = await fetch(`${API_URL}/items?${params.toString()}`);
+        
         const data = await res.json();
         setItems(data.items || []);
       } catch (e) {
-        console.error(e);
+        console.error("Error cargando populares:", e);
       } finally {
         setLoading(false);
       }
