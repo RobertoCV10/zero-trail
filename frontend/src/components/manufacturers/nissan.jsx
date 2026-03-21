@@ -1,5 +1,5 @@
 // src/components/manufacturers/nissan.jsx
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Box, Typography, IconButton, CircularProgress, Container, Grid } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,8 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ModernVehicleCard from './manufacturerPage';
 import GroupDialog from '../groupdialog';
 import { manufacturerConfig } from './manufacturerConfig';
+import { useCarData } from "../../hooks/useCarData";
+
 
 // ── Paleta Nissan ─────────────────────────────────────────────────────────────
 // Rojo disciplinado + blanco frío — estética japonesa de cartel.
@@ -70,12 +72,17 @@ function NissanPage() {
   // Renombrado de 'theme' a 'cfg' — evita confusión con el theme de MUI
   const cfg = manufacturerConfig.nissan;
 
-  const [items,         setItems]         = useState([]);
-  const [loading,       setLoading]       = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
   const [footerVisible, setFooterVisible] = useState(false);
   const brandFooterRef = useRef(null);
+
+  const { carData: items, loading } = useCarData({
+    busqueda: "nissan",
+    limit:    100,
+    setSelectedGroup,
+    setSelectedYear,
+  });
 
   useEffect(() => {
     const el = brandFooterRef.current;
@@ -87,30 +94,6 @@ function NissanPage() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-      const fetchNissan = async () => {
-        // Iniciamos el estado de carga para feedback visual
-        if (setLoading) setLoading(true); 
-        
-        try {
-          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
-          const API_URL = "https://zero-trail-backend.onrender.com";
-          const res = await fetch(`${API_URL}/items?busqueda=nissan&limit=100`);
-          
-          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
-          
-          const data = await res.json();
-          // El check || [] evita errores de mapeo si la base de datos devuelve null
-          setItems(data.items || []); 
-        } catch (e) {
-          console.error("Error en Fetch Nissan:", e);
-        } finally {
-          if (setLoading) setLoading(false);
-        }
-      };
-      fetchNissan();
-    }, []);
 
   const groupedNissan = useMemo(() => {
     const groups = {};
