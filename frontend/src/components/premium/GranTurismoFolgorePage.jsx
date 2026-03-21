@@ -1,5 +1,5 @@
 // src/components/premium/GranTurismoFolgorePage.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, Button, Container, Grid, Stack,
   CircularProgress, IconButton, Fade, Divider, Modal, Backdrop, alpha,
@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupDialog from '../groupdialog';
+import { useCarData } from "../../hooks/useCarData";
 
 // ── Paleta GranTurismo Folgore ────────────────────────────────────────────────
 // Cobre artesanal + negro océano — identidad Maserati artisan.
@@ -36,58 +37,31 @@ const Section = ({ children, sx }) => (
 function MaseratiGranTurismoFolgore() {
   const navigate = useNavigate();
 
-  const [carData,       setCarData]       = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
-  const [loading,       setLoading]       = useState(false);
   const [selectedImg,   setSelectedImg]   = useState(null);
 
-  useEffect(() => {
-      const fetchSpecs = async () => {
-        setLoading(true);
-        try {
-          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
-          const API_URL = "https://zero-trail-backend.onrender.com";
-          const response = await fetch(`${API_URL}/items?busqueda=GranTurismo%20Folgore&limit=20`);
-          
-          if (!response.ok) throw new Error('Error al conectar con el servidor');
-          
-          const data = await response.json();
-          setCarData(data.items || []);
-        } catch (error) {
-          console.error("Error en Fetch GranTurismo Folgore:", error);
-        } finally {
-          setLoading(false);
-        }
+  const { loading, specs: specs2025, carGroup, handleOpenSpecs } = useCarData({
+    busqueda:     "GranTurismo Folgore",
+    limit:        20,
+    resolveSpecs: (data) =>
+      data.find(i => Number(i.Year) === 2025 && i.Battery_Type === "Magnesium-ion") ||
+      data.find(i => Number(i.Year) === 2025) ||
+      data[0] || {},
+    resolveGroup: (data) => {
+      const filtered = data.filter(i => Number(i.Year) === 2025 && i.Battery_Type === "Magnesium-ion");
+      return {
+        Manufacturer: "Maserati",
+        Model:        "GranTurismo Folgore",
+        years:        filtered.length > 0 ? filtered : data.filter(i => Number(i.Year) === 2025),
       };
-      fetchSpecs();
-    }, []);
-
-  const specs2025 = useMemo(() =>
-    carData.find(item => Number(item.Year) === 2025 && item.Battery_Type === 'Magnesium-ion') ||
-    carData.find(item => Number(item.Year) === 2025) ||
-    carData[0] || {}
-  , [carData]);
-
-  const carGroup = useMemo(() => {
-    if (!carData.length) return null;
-    const targetSpecs = carData.filter(item => Number(item.Year) === 2025 && item.Battery_Type === 'Magnesium-ion');
-    return {
-      Manufacturer: 'Maserati',
-      Model:        'GranTurismo Folgore',
-      years:        targetSpecs.length > 0 ? targetSpecs : carData.filter(item => Number(item.Year) === 2025),
-    };
-  }, [carData]);
-
-  const handleOpenSpecs = () => {
-    if (carGroup) {
-      setSelectedGroup(carGroup);
-      const specificYear =
-        carData.find(item => Number(item.Year) === 2025 && item.Battery_Type === 'Magnesium-ion') ||
-        carData.find(item => Number(item.Year) === 2025);
-      setSelectedYear(specificYear);
-    }
-  };
+    },
+    resolveYear: (data) =>
+      data.find(i => Number(i.Year) === 2025 && i.Battery_Type === "Magnesium-ion") ||
+      data.find(i => Number(i.Year) === 2025),
+    setSelectedGroup,
+    setSelectedYear,
+  })
 
   return (
     <Box sx={{ bgcolor: EBONY_BLACK, color: SILK_WHITE, minHeight: '100vh', fontFamily: '"Playfair Display", serif', overflowX: 'hidden' }}>
