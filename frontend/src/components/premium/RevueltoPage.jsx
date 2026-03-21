@@ -1,5 +1,5 @@
 // src/components/premium/RevueltoPage.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, Button, Container, Grid, Stack,
   Modal, Backdrop, CircularProgress, IconButton, Fade, Divider, alpha,
@@ -7,8 +7,10 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import GroupDialog from '../groupdialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import GroupDialog from '../groupdialog';
+import { useCarData } from "../../hooks/useCarData";
+
 
 // ── Paleta Lamborghini Revuelto ───────────────────────────────────────────────
 // Naranja furioso + negro carbono — identidad Lamborghini HPEV.
@@ -31,53 +33,25 @@ const Section = ({ children, sx }) => (
 function LamborghiniRevuelto() {
   const navigate = useNavigate();
 
-  const [carData,       setCarData]       = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
-  const [loading,       setLoading]       = useState(false);
   const [selectedImg,   setSelectedImg]   = useState(null);
 
-  useEffect(() => {
-      const fetchSpecs = async () => {
-        setLoading(true);
-        try {
-          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
-          const API_URL = "https://zero-trail-backend.onrender.com";
-          const response = await fetch(`${API_URL}/items?busqueda=Revuelto&limit=20`);
-          
-          if (!response.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
-          
-          const data = await response.json();
-          setCarData(data.items || []);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchSpecs();
-    }, []);
-
-  const specs2025 = useMemo(() =>
-    carData.find(item => Number(item.Year) === 2025) || carData[0] || {}
-  , [carData]);
-
-  const carGroup = useMemo(() => {
-    if (!carData.length) return null;
-    return {
-      Manufacturer: 'Lamborghini',
-      Model:        'Revuelto',
-      years:        [...carData].sort((a, b) => b.Year - a.Year),
-    };
-  }, [carData]);
-
-  const handleOpenSpecs = () => {
-    if (carGroup) {
-      setSelectedGroup(carGroup);
-      const targetYear = carData.find(item => Number(item.Year) === 2025) || carData[0];
-      setSelectedYear(targetYear);
-    }
-  };
+  const { loading, specs: specs2025, carGroup, handleOpenSpecs } = useCarData({
+    busqueda:     "Revuelto",
+    limit:        20,
+    resolveSpecs: (data) =>
+      data.find(i => Number(i.Year) === 2025) || data[0] || {},
+    resolveGroup: (data) => ({
+      Manufacturer: "Lamborghini",
+      Model:        "Revuelto",
+      years:        [...data].sort((a, b) => b.Year - a.Year),
+    }),
+    resolveYear: (data) =>
+      data.find(i => Number(i.Year) === 2025) || data[0],
+    setSelectedGroup,
+    setSelectedYear,
+  });
 
   // Estilo glass reutilizado en varias cajas
   const glassStyle = {
