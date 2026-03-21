@@ -1,5 +1,5 @@
 // src/components/premium/EtronGTPage.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, Button, Container, Grid, Stack,
   IconButton, Fade, Divider, CircularProgress,
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupDialog from '../groupdialog';
+import { useCarData } from "../../hooks/useCarData";
 
 // ── Paleta e-tron GT ──────────────────────────────────────────────────────────
 // Cian eléctrico Audi + plata quattro — identidad de la línea RS e-tron.
@@ -41,46 +42,21 @@ function AudiETronGT() {
   const [carData,       setCarData]       = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
-  const [loading,       setLoading]       = useState(false);
   const [selectedImg,   setSelectedImg]   = useState(null);
 
-  useEffect(() => {
-      const fetchSpecs = async () => {
-        setLoading(true);
-        try {
-          // --- CAMBIO A PRODUCCIÓN ---
-          const API_URL = "https://zero-trail-backend.onrender.com";
-          const response = await fetch(`${API_URL}/items?busqueda=e-tron%20GT&limit=20`);
-          
-          if (!response.ok) throw new Error('Error al conectar con el servidor de Render');
-          
-          const data = await response.json();
-          setCarData(data.items || []);
-        } catch (error) {
-          console.error("Error en Fetch e-tron GT:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchSpecs();
-    }, []);
-
-  const specs2025 = useMemo(() =>
-    carData.find(item => Number(item.Year) === 2025) || carData[0] || {}
-  , [carData]);
-
-  const carGroup = useMemo(() => {
-    if (!carData.length) return null;
-    return {
-      Manufacturer: 'Audi',
-      Model:        'RS e-tron GT',
-      years:        carData.filter(item => Number(item.Year) === 2025),
-    };
-  }, [carData]);
-
-  const handleOpenSpecs = () => {
-    if (carGroup) { setSelectedGroup(carGroup); setSelectedYear(2025); }
-  };
+  // AudiEtronGT.jsx
+  const { loading, specs, carGroup, handleOpenSpecs } = useCarData({
+    busqueda:     "e-tron GT",
+    resolveSpecs: (data) => data.find(i => Number(i.Year) === 2025) || data[0] || {},
+    resolveGroup: (data) => ({
+      Manufacturer: "Audi",
+      Model:        "RS e-tron GT",
+      years:        data.filter(i => Number(i.Year) === 2025),
+    }),
+    resolveYear:  () => 2025,
+    setSelectedGroup,
+    setSelectedYear,
+  });
 
   return (
     <Box sx={{ bgcolor: VOID_BLACK, color: QUATTRO_SILVER, minHeight: '100vh', fontFamily: 'Inter, sans-serif', overflowX: 'hidden' }}>
