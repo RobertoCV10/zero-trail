@@ -7,6 +7,8 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ModernVehicleCard from './manufacturerPage';
 import GroupDialog from '../groupdialog';
 import { manufacturerConfig } from './manufacturerConfig';
+import { useCarData } from "../../hooks/useCarData";
+
 
 // ── Paleta BYD ────────────────────────────────────────────────────────────────
 // Cian eléctrico propio de la marca — no pertenece al sistema verde de la app.
@@ -89,7 +91,7 @@ function BydPage() {
   const brandFooterRef = useRef(null);
 
   const { carData: items, loading } = useCarData({
-    busqueda: "audi",
+    busqueda: "byd",
     limit:    100,
     setSelectedGroup,
     setSelectedYear,
