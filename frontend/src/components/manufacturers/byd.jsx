@@ -1,5 +1,5 @@
 // src/components/manufacturers/byd.jsx
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Box, Typography, IconButton, CircularProgress, Container, Grid } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -83,12 +83,17 @@ function BydPage() {
   // Renombrado de 'theme' a 'cfg' — evita confusión con el theme de MUI
   const cfg = manufacturerConfig.byd;
 
-  const [items,         setItems]         = useState([]);
-  const [loading,       setLoading]       = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
   const [footerVisible, setFooterVisible] = useState(false);
   const brandFooterRef = useRef(null);
+
+  const { carData: items, loading } = useCarData({
+    busqueda: "audi",
+    limit:    100,
+    setSelectedGroup,
+    setSelectedYear,
+  });
 
   useEffect(() => {
     const el = brandFooterRef.current;
@@ -100,30 +105,6 @@ function BydPage() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-      const fetchByd = async () => {
-        // Asegúrate de iniciar el loading si tienes el estado definido
-        if (setLoading) setLoading(true); 
-        
-        try {
-          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
-          const API_URL = "https://zero-trail-backend.onrender.com";
-          const res = await fetch(`${API_URL}/items?busqueda=byd&limit=100`);
-          
-          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
-          
-          const data = await res.json();
-          // Agregamos el check de seguridad || [] para evitar errores de mapeo
-          setItems(data.items || []); 
-        } catch (e) {
-          console.error("Error en Fetch BYD:", e);
-        } finally {
-          if (setLoading) setLoading(false);
-        }
-      };
-      fetchByd();
-    }, []);
 
   const groupedByd = useMemo(() => {
     const groups = {};
