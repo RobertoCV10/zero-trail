@@ -1,5 +1,5 @@
 // src/components/premium/FerrariEVPage.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, Button, Container, Grid, Stack,
   CircularProgress, IconButton, Fade, Modal, Backdrop, useMediaQuery, alpha,
@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupDialog from '../groupdialog';
+import { useCarData } from "../../hooks/useCarData";
 
 // ── Paleta Ferrari SF90 ───────────────────────────────────────────────────────
 // Rojo carreras + negro profundo — identidad Ferrari EV.
@@ -38,52 +39,35 @@ function FerrariSF90Stradale() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:900px)');
 
-  const [carData,       setCarData]       = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
-  const [loading,       setLoading]       = useState(false);
   const [selectedImg,   setSelectedImg]   = useState(null);
 
-  useEffect(() => {
-      const fetchSpecs = async () => {
-        setLoading(true);
-        try {
-          // --- CONEXIÓN A RENDER ---
-          const API_URL = "https://zero-trail-backend.onrender.com";
-          const response = await fetch(`${API_URL}/items?busqueda=SF90%20Stradale&limit=50`);
-          
-          if (!response.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
-          
-          const data = await response.json();
-          setCarData(data.items || []);
-        } catch (error) {
-          console.error("Error en Fetch SF90 Stradale:", error);
-        } finally {
-          setLoading(false);
-        }
+  // ✅ Reemplaza todo lo demás con esto:
+  const {
+    loading,
+    specs:    specs2025,
+    carGroup: carGroup2025,
+    handleOpenSpecs: handleOpenTelemetry,
+  } = useCarData({
+    busqueda:     "SF90 Stradale",
+    limit:        50,
+    resolveSpecs: (data) =>
+      data.find(i => i.Year === 2025 && i.Battery_Type === "Calcium-ion") ||
+      data.find(i => i.Year === 2025) ||
+      data[0] || {},
+    resolveGroup: (data) => {
+      const filtered = data.filter(i => i.Year === 2025 && i.Battery_Type === "Calcium-ion");
+      return {
+        Manufacturer: "Ferrari",
+        Model:        "SF90 Stradale",
+        years:        filtered.length > 0 ? filtered : data.filter(i => i.Year === 2025),
       };
-      fetchSpecs();
-    }, []);
-
-  const specs2025 = useMemo(() =>
-    carData.find(item => item.Year === 2025 && item.Battery_Type === 'Calcium-ion') ||
-    carData.find(item => item.Year === 2025) ||
-    carData[0] || {}
-  , [carData]);
-
-  const carGroup2025 = useMemo(() => {
-    if (!carData.length) return null;
-    const filteredYears = carData.filter(item => item.Year === 2025 && item.Battery_Type === 'Calcium-ion');
-    return {
-      Manufacturer: 'Ferrari',
-      Model:        'SF90 Stradale',
-      years:        filteredYears.length > 0 ? filteredYears : carData.filter(item => item.Year === 2025),
-    };
-  }, [carData]);
-
-  const handleOpenTelemetry = () => {
-    if (carGroup2025) { setSelectedGroup(carGroup2025); setSelectedYear(2025); }
-  };
+    },
+    resolveYear:  () => 2025,
+    setSelectedGroup,
+    setSelectedYear,
+  });
 
   // Estilo base de las cajas de telemetría — reutilizado en 4 instancias
   const telemetryBox = {

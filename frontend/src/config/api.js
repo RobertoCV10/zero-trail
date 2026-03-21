@@ -1,0 +1,1 @@
+export const API_URL = "https://zero-trail-backend.onrender.com";
