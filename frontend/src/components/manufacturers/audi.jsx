@@ -1,5 +1,5 @@
 // src/components/manufacturers/audi.jsx
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Box, Typography, IconButton, CircularProgress, Container, Grid } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ModernVehicleCard from './manufacturerPage';
 import GroupDialog from '../groupdialog';
 import { manufacturerConfig } from './manufacturerConfig';
+import { useCarData } from "../../hooks/useCarData";
 
 // ── Paleta Audi ───────────────────────────────────────────────────────────────
 // Estos valores son la identidad visual de Audi — no van al theme global.
@@ -62,33 +63,17 @@ function AudiPage() {
   // Renombrado de 'theme' a 'cfg' — evita confusión con el theme de MUI
   const cfg = manufacturerConfig.audi;
 
-  const [items,         setItems]         = useState([]);
-  const [loading,       setLoading]       = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
   const [footerVisible, setFooterVisible] = useState(false);
   const brandFooterRef = useRef(null);
 
-  useEffect(() => {
-      const fetchAudi = async () => {
-        setLoading(true); // Asegúrate de tener este estado para mostrar el spinner
-        try {
-          // --- CONEXIÓN A PRODUCCIÓN (RENDER) ---
-          const API_URL = "https://zero-trail-backend.onrender.com";
-          const res = await fetch(`${API_URL}/items?busqueda=audi&limit=100`);
-          
-          if (!res.ok) throw new Error('Error al conectar con el servidor de Zero Trail');
-          
-          const data = await res.json();
-          setItems(data.items || []);
-        } catch (e) {
-          console.error("Error en Fetch Audi:", e);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchAudi();
-    }, []);
+  const { carData: items, loading } = useCarData({
+    busqueda: "audi",
+    limit:    100,
+    setSelectedGroup,
+    setSelectedYear,
+  });
 
   // Brand bar se oculta cuando el footer de marca entra en vista
   useEffect(() => {
