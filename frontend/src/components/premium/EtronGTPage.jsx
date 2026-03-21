@@ -12,6 +12,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupDialog from '../groupdialog';
 import { useCarData } from "../../hooks/useCarData";
 
+
 // ── Paleta e-tron GT ──────────────────────────────────────────────────────────
 // Cian eléctrico Audi + plata quattro — identidad de la línea RS e-tron.
 // No pertenecen al sistema verde de la app.
@@ -39,15 +40,15 @@ const Section = ({ children, sx }) => (
 function AudiETronGT() {
   const navigate = useNavigate();
 
-  const [carData,       setCarData]       = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
   const [selectedImg,   setSelectedImg]   = useState(null);
 
-  // AudiEtronGT.jsx
-  const { loading, specs, carGroup, handleOpenSpecs } = useCarData({
+  const { loading, specs: specs2025, carGroup, handleOpenSpecs } = useCarData({
     busqueda:     "e-tron GT",
-    resolveSpecs: (data) => data.find(i => Number(i.Year) === 2025) || data[0] || {},
+    limit:        20,
+    resolveSpecs: (data) =>
+      data.find(i => Number(i.Year) === 2025) || data[0] || {},
     resolveGroup: (data) => ({
       Manufacturer: "Audi",
       Model:        "RS e-tron GT",
