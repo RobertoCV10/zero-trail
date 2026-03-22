@@ -7,7 +7,6 @@ import SearchBar   from './searchbar';
 import ItemGrid    from './itemgrid';
 import Pagination  from './pagination';
 import GroupDialog from './groupdialog';
-import API_URL    from '../config';
 
 // Formats a number as a USD price string with two decimal places
 function formatPrice(price) {
@@ -58,6 +57,7 @@ const VehicleBrowser = () => {
         if (sortField) params.append('sortField', sortField);
         if (sortOrder) params.append('sortOrder', sortOrder);
 
+        const API_URL = "https://zero-trail-backend.onrender.com";
         const response = await fetch(`${API_URL}/items?${params.toString()}`);
 
         if (!response.ok) throw new Error('Network response was not ok');
