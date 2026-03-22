@@ -1,3 +1,4 @@
+// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -5,18 +6,21 @@ require('dotenv').config();
 
 const app = express();
 
-// --- CONFIGURACIÓN ---
+//  CONFIG
 const PORT = process.env.PORT || 5000;
 const DB_URI = process.env.MONGO_URI;
 const DB_NAME = process.env.DB_NAME || 'proyecto_db';
 
-// --- MIDDLEWARE CORS ACTUALIZADO ---
+//  CORS 
+  // Allows requests from production and local dev origins.
+  // Regex pattern covers all Vercel preview deployments automatically.
+  // This API is read-only.
 app.use(cors({
   origin: [
-    'https://zero-trail.vercel.app',            // Tu dominio principal (Domains)
-    /\.vercel\.app$/,                          // <--- Acepta CUALQUIER deployment de Vercel
-    'http://localhost:5173',                   // Vite local
-    'http://localhost:3000'                    // CRA local
+    'https://zero-trail.vercel.app',
+    /\.vercel\.app$/,
+    'http://localhost:5173',
+    'http://localhost:3000'
   ],
   methods: ['GET'],
   credentials: true
@@ -24,12 +28,14 @@ app.use(cors({
 
 app.use(express.json());
 
-// Conexión optimizada
+  // Connects using dbName option instead of embedding it in the URI.
 mongoose.connect(DB_URI, { dbName: DB_NAME })
-  .then(() => console.log(`✅ Conectado a la base de datos: ${DB_NAME}`))
-  .catch(err => console.error('❌ Error de conexión:', err.message));
+  .then(() => console.log(`connected to db ${DB_NAME}`))
+  .catch(err => console.error('connection error:', err.message));
 
-// --- ESQUEMA Y MODELO (Optimizado para Solo Lectura) ---
+// SCHEMA and MODEL 
+  // Manufacturer and Model are indexed to speed up the search tool in GET /items.
+  // No write endpoints exist, so no validation rules are enforced at schema level.
 const itemSchema = new mongoose.Schema({
   Manufacturer: { type: String, index: true },
   Model: { type: String, index: true },
@@ -51,13 +57,18 @@ const itemSchema = new mongoose.Schema({
 
 const Item = mongoose.model('Item', itemSchema);
 
-// --- RUTAS / ENDPOINTS ---
+// ROUTES
 
+  // Health check — confirms the server is running.
 app.get('/', (req, res) => {
-  res.send('🚀 Backend de Autos Eléctricos (Producción) funcionando');
+  res.send(' backend server is running correctly');
 });
 
-// 2. Obtener items con filtros y paginación (Optimizado con .lean())
+  // Returns a paginated, optionally filtered and sorted list of vehicles.
+  // Query params: busqueda (string), sortField, sortOrder ('asc'|'desc'), page, limit.
+  // Special regex characters in busqueda are escaped before use to prevent injection.
+  // countDocuments and find run in parallel to reduce total response time.
+  // .lean() returns plain JS objects instead of Mongoose documents — faster serialization.
 app.get('/items', async (req, res) => {
   try {
     const { busqueda, sortField, sortOrder } = req.query;
@@ -67,7 +78,6 @@ app.get('/items', async (req, res) => {
 
     let filtro = {};
     if (busqueda) {
-      // Escapamos caracteres especiales para evitar errores en el Regex
       const safeSearch = busqueda.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filtro.$or = [
         { Manufacturer: { $regex: safeSearch, $options: 'i' } },
@@ -79,16 +89,11 @@ app.get('/items', async (req, res) => {
     if (sortField) {
       sortObj[sortField] = sortOrder === 'asc' ? 1 : -1;
     } else {
-      sortObj = { createdAt: -1 }; // Orden por defecto
+      sortObj = { createdAt: -1 }; // Default: newest first
     }
 
-    // Ejecutamos búsqueda y conteo en paralelo para mejorar el tiempo de respuesta
     const [items, totalItems] = await Promise.all([
-      Item.find(filtro)
-        .sort(sortObj)
-        .skip(skip)
-        .limit(limit)
-        .lean(), // <--- Convierte a JSON puro (mucho más rápido)
+      Item.find(filtro).sort(sortObj).skip(skip).limit(limit).lean(),
       Item.countDocuments(filtro)
     ]);
 
@@ -103,7 +108,8 @@ app.get('/items', async (req, res) => {
   }
 });
 
-// 3. Agrupación (Optimizado)
+  // Groups all records by Manufacturer + Model, nesting each year as a child entry.
+  // allowDiskUse enables the aggregation to spill to disk if the result set grows large.
 app.get('/api/grouped-items', async (req, res) => {
   try {
     const grouped = await Item.aggregate([
@@ -121,16 +127,16 @@ app.get('/api/grouped-items', async (req, res) => {
           _id: 0
         }
       }
-    ]).allowDiskUse(true); // Útil si la base crece mucho
-    
+    ]).allowDiskUse(true);
+
     res.json(grouped);
   } catch (err) {
     res.status(500).json({ error: 'Error en la agregación' });
   }
 });
 
-// --- INICIO DEL SERVIDOR ---
+// --- SERVER START ---
+  // Binds to 0.0.0.0 to accept connections on all network interfaces.
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`📡 Servidor listo en puerto ${PORT}`);
 });
-
