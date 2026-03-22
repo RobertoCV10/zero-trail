@@ -11,16 +11,17 @@ import HeroSection from './components/herosection';
 
 function HomePage() {
   return (
+    // component="main" improves landmark semantics for screen readers
     <Box component="main" sx={{ backgroundColor: 'background.default', minHeight: '100vh' }}>
 
       <HeroSection />
 
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 4 }, py: { xs: 2, md: 4 } }}>
 
-        {/* 
-          Usamos variant="h3" + className para el color accent.
-          El tamaño/peso viene del theme, el color del módulo CSS.
-          Si quieres quitarle el verde a este h3 en particular, solo elimina className.
+        {/*
+          variant="h3" pulls size and weight from the theme
+          className adds the accent color from App.module.css
+          Remove className to render this heading without the green tint
         */}
         <Typography
           variant="h3"
@@ -34,6 +35,7 @@ function HomePage() {
           <VehicleBrowser />
         </Box>
 
+        {/* Stacked sections share a consistent vertical gap scale */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 6, md: 10 } }}>
           <ManufacturerCarousel />
           <HomeSections />

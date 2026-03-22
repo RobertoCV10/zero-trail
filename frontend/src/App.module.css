@@ -1,19 +1,20 @@
 /* src/App.module.css */
-/* ─────────────────────────────────────────────────────────────────────────────
-   CLASES DE LAYOUT REUTILIZABLES
-   Solo clases que son genuinamente compartidas entre múltiples páginas.
-   Si una clase solo la usa un componente, el estilo va en ese componente
-   con sx={} o un styled() local.
-───────────────────────────────────────────────────────────────────────────── */
+/* 
+   SHARED LAYOUT CLASSES
+    Only classes used by more than one page or component live here
+    Single-component styles belong in that component via sx={} or styled()
+ */
 
-/* Título de sección con acento verde — úsalo donde el h3 necesite el color primario */
+/* Accent-colored section heading. Apply to h3 elements that need the primary brand color */
 .sectionTitle {
   color: var(--color-accent);
   text-align: center;
   text-shadow: 0 0 12px var(--alpha-accent-glow);
 }
 
-/* Paginación */
+/*  Pagination  */
+
+/* Wraps all pagination controls. margin-top: auto pushes it to the bottom of flex containers */
 .paginationContainer {
   display: flex;
   justify-content: center;
@@ -24,6 +25,7 @@
   flex-wrap: wrap;
 }
 
+/* 44px height meets WCAG 2.5.5 minimum touch target size */
 .pageButton,
 .navButton {
   min-width: 44px;
@@ -34,6 +36,7 @@
   font-size: 0.9rem;
 }
 
+/* On small screens, prev/next buttons expand to fill remaining row space */
 @media (max-width: 480px) {
   .paginationContainer {
     gap: 4px;

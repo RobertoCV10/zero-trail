@@ -1,11 +1,11 @@
 // src/theme.js
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TOKENS POR MODO
-// El acento verde se mantiene en ambos — es la identidad de la marca.
-// En light mode se usa un verde más oscuro para mantener contraste sobre blanco.
-// ─────────────────────────────────────────────────────────────────────────────
+
+// DESIGN TOKENS
+  // token desing for future implementation of light mode 
+  // Separated by mode. The green accent is consistent across both 
+  // darker in light mode to preserve contrast against white backgrounds
 const darkTokens = {
   color: {
     accent:         '#72FF13',
@@ -66,12 +66,13 @@ const lightTokens = {
   },
 };
 
-// Exporta tokens dark para código que los importa directamente
+// Exposed for components that consume tokens directly without the MUI theme
 export const tokens = darkTokens;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FACTORY
-// ─────────────────────────────────────────────────────────────────────────────
+
+// THEME FACTORY
+  // Accepts 'dark' | 'light'. Defaults to dark
+  // responsiveFontSizes is applied last so clamp() overrides stay intact
 export function createAppTheme(mode = 'dark') {
   const t = mode === 'dark' ? darkTokens : lightTokens;
 
@@ -82,6 +83,8 @@ export function createAppTheme(mode = 'dark') {
         main:         t.color.accent,
         light:        t.color.accentLight,
         dark:         t.color.accentDark,
+        // Dark mode uses bgBase for readable text on the bright accent;
+        // light mode in procceess...
         contrastText: mode === 'dark' ? t.color.bgBase : '#FFFFFF',
       },
       secondary: {
@@ -102,8 +105,10 @@ export function createAppTheme(mode = 'dark') {
 
     typography: {
       fontFamily: "'Poppins', sans-serif",
+      // Tight tracking on headings reinforces the brand's technical aesthetic
       h1: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
       h2: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
+      // h3 uses clamp() directly; responsiveFontSizes won't override this value
       h3: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2, fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' },
       h4: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
       h5: { fontWeight: 600 },
@@ -121,6 +126,7 @@ export function createAppTheme(mode = 'dark') {
           root: {
             backgroundColor:      t.alpha.appBarBg,
             backgroundImage:      'none',
+            // Frosted-glass effect — WebkitBackdropFilter required for Safari
             backdropFilter:       'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             boxShadow:            'none',
@@ -135,7 +141,7 @@ export function createAppTheme(mode = 'dark') {
           root: {
             borderRadius: '8px',
             padding:      '8px 20px',
-            minHeight:    '44px',
+            minHeight:    '44px', // Meets WCAG 2.5.5 minimum touch target size
             transition:   '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           },
           containedPrimary: {
@@ -164,6 +170,7 @@ export function createAppTheme(mode = 'dark') {
             borderRadius:    '16px',
             border:          `1px solid ${t.alpha.cardBorder}`,
             transition:      '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            // Lift effect is scoped to pointer devices to avoid stuck states on touch
             '@media (hover: hover)': {
               '&:hover': {
                 transform:   'translateY(-8px)',
@@ -177,6 +184,7 @@ export function createAppTheme(mode = 'dark') {
 
       MuiContainer: {
         styleOverrides: {
+          // !important overrides MUI's built-in responsive padding scale
           root: {
             paddingLeft:  '20px !important',
             paddingRight: '20px !important',
@@ -211,5 +219,5 @@ export function createAppTheme(mode = 'dark') {
   return theme;
 }
 
-// Export default para compatibilidad con `import theme from './theme'`
+// Default export for `import theme from './theme'` — always dark mode
 export default createAppTheme('dark');

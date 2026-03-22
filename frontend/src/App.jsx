@@ -8,8 +8,8 @@ import './App.css';
 import { ThemeModeProvider, useThemeMode } from './context/ThemeContext';
 import { createAppTheme } from './theme';
 
-import NavBar  from './components/nav';
-import Footer  from './components/footer';
+import NavBar   from './components/nav';
+import Footer   from './components/footer';
 import HomePage from './home';
 
 import TeslaPage     from './components/manufacturers/tesla';
@@ -30,23 +30,22 @@ import GranTurismoFolgorePage from './components/premium/GranTurismoFolgorePage'
 
 import Cybertruck from './components/tesla/cybertruck';
 
-// ── Scroll al inicio en cada cambio de ruta ───────────────────────────────────
+// Resets scroll position on every route change
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
 };
 
-// ── Inner app — consume el contexto de modo ───────────────────────────────────
-// Separado de App para poder usar useThemeMode() dentro del Provider.
+// Consumes ThemeModeContext to rebuild the MUI theme when the mode changes
+// Kept separate from App so useThemeMode() can be called inside its own Provider
 function ThemedApp() {
   const { mode } = useThemeMode();
-  // Recrea el tema solo cuando cambia el modo
   const theme = useMemo(() => createAppTheme(mode), [mode]);
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />   {/* Aplica bgcolor del theme al body automáticamente */}
+      <CssBaseline /> {/* Applies the theme's background color to <body> */}
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ScrollToTop />
         <NavBar />
@@ -56,11 +55,13 @@ function ThemedApp() {
           <Route path="/value-for-money"             element={<ValueForMoneyCarsPage />} />
           <Route path="/safest"                      element={<SafestCarsPage />} />
 
+          {/* Premium model detail pages */}
           <Route path="/premium/ferrari-ev"          element={<FerrariEVPage />} />
           <Route path="/premium/revuelto"            element={<RevueltoPage />} />
           <Route path="/premium/e-tron-gt"           element={<EtronGTPage />} />
           <Route path="/premium/granturismo-folgore" element={<GranTurismoFolgorePage />} />
 
+          {/* Standalone model page — outside /manufacturers to support a better layout */}
           <Route path="/tesla/cybertruck"            element={<Cybertruck />} />
 
           <Route path="/manufacturers/tesla"         element={<TeslaPage />} />
@@ -76,7 +77,7 @@ function ThemedApp() {
   );
 }
 
-// ── App root — provee el contexto de modo ─────────────────────────────────────
+// Root component. Provides ThemeModeContext to the entire tree
 function App() {
   return (
     <ThemeModeProvider>
