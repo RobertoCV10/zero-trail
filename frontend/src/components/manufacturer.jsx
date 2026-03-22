@@ -7,36 +7,35 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme, alpha } from '@mui/material/styles';
 
 const manufacturers = [
-  { name: 'Tesla',     role: 'EV Leader',          img: '/manufacturer/tesla.png'     },
-  { name: 'BYD',       role: 'Global EV Power',     img: '/manufacturer/byd.png'       },
-  { name: 'Nissan',    role: 'Electric Pioneer',    img: '/manufacturer/nissan.png'    },
-  { name: 'Chevrolet', role: 'Mobility Future',     img: '/manufacturer/chevrolet.jpg' },
-  { name: 'Hyundai',   role: 'Innovative Tech',     img: '/manufacturer/hyundai.jpg'   },
-  { name: 'Audi',      role: 'Luxury Performance',  img: '/manufacturer/audi.jpg'      },
+  { name: 'Tesla',     role: 'EV Leader',         img: '/manufacturer/tesla.png'     },
+  { name: 'BYD',       role: 'Global EV Power',   img: '/manufacturer/byd.png'       },
+  { name: 'Nissan',    role: 'Electric Pioneer',  img: '/manufacturer/nissan.png'    },
+  { name: 'Chevrolet', role: 'Mobility Future',   img: '/manufacturer/chevrolet.jpg' },
+  { name: 'Hyundai',   role: 'Innovative Tech',   img: '/manufacturer/hyundai.jpg'   },
+  { name: 'Audi',      role: 'Luxury Performance',img: '/manufacturer/audi.jpg'      },
 ];
 
 function ManufacturerCarouselManual() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const navigate = useNavigate();
-  const theme = useTheme();
+  const theme    = useTheme();
 
-  // Tokens del theme — único cambio respecto al original
-  const accentColor    = theme.palette.primary.main;       // '#72FF13'
-  const darkBackground = theme.palette.background.paper;   // '#1a1a1a'
+  const accentColor    = theme.palette.primary.main;
+  const darkBackground = theme.palette.background.paper;
 
-  // Breakpoints usando el sistema del theme (mismo resultado, sin strings manuales)
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
 
-  const N_ITEMS = manufacturers.length;
-  const N_VIEW  = isMobile ? 1 : 3;
-  const CARD_SIZE = isMobile ? 120 : isTablet ? 105 : 160;
+  const N_ITEMS   = manufacturers.length;
+  const N_VIEW    = isMobile ? 1 : 3;                              // Visible slots at once
+  const CARD_SIZE = isMobile ? 120 : isTablet ? 105 : 160;        // Active diamond size in px
 
   const maxIdx = N_ITEMS - 1;
 
   const handlePrev = () => setCurrentIdx(prev => Math.max(0, prev - 1));
   const handleNext = () => setCurrentIdx(prev => Math.min(maxIdx, prev + 1));
 
+  // First click focuses the card; second click navigates to its manufacturer page
   const handleItemClick = (index) => {
     if (index === currentIdx) {
       navigate(`/manufacturers/${manufacturers[index].name.toLowerCase()}`);
@@ -45,33 +44,33 @@ function ManufacturerCarouselManual() {
     }
   };
 
+  // Keeps the active card centered in the visible window without overflowing either edge
   const half        = Math.floor(N_VIEW / 2);
   const trackOffset = Math.min(Math.max(currentIdx - half, 0), N_ITEMS - N_VIEW);
-  const activeVisualIdx = currentIdx;
 
   return (
     <Box
       sx={{
-        position: 'relative',
-        width:    '100%',
-        maxWidth: '100%',
-        mx:       'auto',
-        py:       { xs: 4, md: 8 },
-        overflow: 'hidden',
+        position:  'relative',
+        width:     '100%',
+        maxWidth:  '100%',
+        mx:        'auto',
+        py:        { xs: 4, md: 8 },
+        overflow:  'hidden',
         boxSizing: 'border-box',
       }}
     >
-      {/* TÍTULO */}
+      {/* Section heading with accent underline */}
       <Box sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
         <Typography
           variant="h3"
           sx={{
-            fontWeight:      900,
-            textTransform:   'uppercase',
-            letterSpacing:   '0.2em',
-            fontSize:        { xs: '1.5rem', md: '2.2rem' },
-            color:           'text.primary',
-            mb:              1,
+            fontWeight:    900,
+            textTransform: 'uppercase',
+            letterSpacing: '0.2em',
+            fontSize:      { xs: '1.5rem', md: '2.2rem' },
+            color:         'text.primary',
+            mb:            1,
           }}
         >
           Partners
@@ -87,7 +86,6 @@ function ManufacturerCarouselManual() {
         />
       </Box>
 
-      {/* CAROUSEL WRAPPER */}
       <Box
         sx={{
           display:        'flex',
@@ -98,7 +96,7 @@ function ManufacturerCarouselManual() {
           gap:            { xs: 0, md: 1 },
         }}
       >
-        {/* BOTÓN PREV */}
+        {/* Prev button — hidden (opacity 0) when at the first item */}
         <IconButton
           onClick={handlePrev}
           disabled={currentIdx === 0}
@@ -120,7 +118,7 @@ function ManufacturerCarouselManual() {
           <ArrowBackIosNewIcon sx={{ fontSize: { xs: '0.8rem', md: '1rem' } }} />
         </IconButton>
 
-        {/* VENTANA DE VISUALIZACIÓN */}
+        {/* Viewport — clips the track horizontally, allows vertical overflow for glow */}
         <Box
           sx={{
             flex:      1,
@@ -129,7 +127,7 @@ function ManufacturerCarouselManual() {
             height:    { xs: CARD_SIZE * 2.0, md: CARD_SIZE * 2.1 },
           }}
         >
-          {/* TRACK */}
+          {/* Track — slides via translateX; each slot is 1/N_VIEW of the viewport width */}
           <Box
             sx={{
               display:    'flex',
@@ -140,7 +138,8 @@ function ManufacturerCarouselManual() {
             }}
           >
             {manufacturers.map((m, idx) => {
-              const isActive   = isMobile ? idx === currentIdx : idx === activeVisualIdx;
+              const isActive    = idx === currentIdx;
+              // Inactive diamonds are scaled down to 78% to create depth
               const diamondSize = isActive ? CARD_SIZE : CARD_SIZE * 0.78;
 
               return (
@@ -172,7 +171,8 @@ function ManufacturerCarouselManual() {
                       width:         '100%',
                     }}
                   >
-                    {/* DIAMANTE */}
+                    {/* Diamond frame — rotated box with the logo counter-rotated inside
+                        mt/mb margins use a fraction of the diamond size to stay proportional */}
                     <Box
                       sx={{
                         position:        'relative',
@@ -195,6 +195,7 @@ function ManufacturerCarouselManual() {
                         transition:      'width 0.5s ease, height 0.5s ease, mb 0.5s ease, box-shadow 0.5s ease, border 0.5s ease',
                       }}
                     >
+                      {/* Logo is oversized (145%) and counter-rotated to fill the diamond naturally */}
                       <Box
                         sx={{
                           position:           'absolute',
@@ -211,7 +212,7 @@ function ManufacturerCarouselManual() {
                       />
                     </Box>
 
-                    {/* TEXTO */}
+                    {/* Caption — name scales with active state; role fades in only when active */}
                     <Box
                       component="figcaption"
                       sx={{
@@ -233,9 +234,8 @@ function ManufacturerCarouselManual() {
                           fontWeight: 800,
                           transition: 'font-size 0.3s ease',
                           lineHeight: 1.2,
-                          visibility: isActive
-                            ? 'visible'
-                            : { xs: 'hidden', md: 'visible' },
+                          // Hidden on mobile when inactive to avoid text overlap in tight slots
+                          visibility: isActive ? 'visible' : { xs: 'hidden', md: 'visible' },
                         }}
                       >
                         {m.name}
@@ -249,7 +249,7 @@ function ManufacturerCarouselManual() {
                           textTransform: 'uppercase',
                           opacity:       isActive ? 1 : 0,
                           transition:    'opacity 0.3s ease',
-                          height:        '16px',
+                          height:        '16px', // Reserved height prevents layout shift on fade
                         }}
                       >
                         {m.role}
@@ -262,7 +262,7 @@ function ManufacturerCarouselManual() {
           </Box>
         </Box>
 
-        {/* BOTÓN NEXT */}
+        {/* Next button — hidden (opacity 0) when at the last item */}
         <IconButton
           onClick={handleNext}
           disabled={currentIdx >= maxIdx}
@@ -285,10 +285,10 @@ function ManufacturerCarouselManual() {
         </IconButton>
       </Box>
 
-      {/* DOTS */}
+      {/* Dot indicators — active dot expands to a bar, mirrors the hero section pattern */}
       <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 5 }}>
         {manufacturers.map((_, i) => {
-          const isActive = isMobile ? i === currentIdx : i === activeVisualIdx;
+          const isActive = i === currentIdx;
           return (
             <Box
               key={i}

@@ -1,12 +1,18 @@
+// src/hooks/useCarData.js
 import { useState, useEffect, useMemo } from "react";
 import { API_URL } from "../config/api";
 
 /**
- * @param {string} busqueda       - Término de búsqueda para el endpoint
- * @param {number} limit          - Límite de resultados (default: 20)
- * @param {Function} resolveSpecs - (carData) => item  — elige el spec principal
- * @param {Function} resolveGroup - (carData) => { Manufacturer, Model, years }
- * @param {Function} resolveYear  - (carData) => item | number — para setSelectedYear
+ * Fetches vehicle records for a given search term and derives
+ * the spec, group, and year values consumed by manufacturer pages
+ *
+ * @param {string}   busqueda       - Search term forwarded to GET /items
+ * @param {number}   limit          - Max records to fetch (default: 20)
+ * @param {Function} resolveSpecs   - (items) => item   — picks the primary spec object
+ * @param {Function} resolveGroup   - (items) => { Manufacturer, Model, years }
+ * @param {Function} resolveYear    - (items) => item | number — initial year for the modal
+ * @param {Function} setSelectedGroup - Setter lifted from the parent page
+ * @param {Function} setSelectedYear  - Setter lifted from the parent page
  */
 export function useCarData({
   busqueda,
@@ -17,8 +23,8 @@ export function useCarData({
   setSelectedGroup,
   setSelectedYear,
 }) {
-  const [carData, setCarData]   = useState([]);
-  const [loading, setLoading]   = useState(false);
+  const [carData, setCarData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchSpecs = async () => {
@@ -38,9 +44,12 @@ export function useCarData({
     fetchSpecs();
   }, [busqueda, limit]);
 
-  const specs     = useMemo(() => resolveSpecs?.(carData) ?? carData[0] ?? {},  [carData]);
-  const carGroup  = useMemo(() => (carData.length ? resolveGroup?.(carData) : null), [carData]);
+  // resolveSpecs/resolveGroup are intentionally excluded from deps 
+  // they are stable factory functions defined outside the component render cycle
+  const specs    = useMemo(() => resolveSpecs?.(carData) ?? carData[0] ?? {}, [carData]);
+  const carGroup = useMemo(() => (carData.length ? resolveGroup?.(carData) : null), [carData]);
 
+  // Pushes the resolved group and year up to the parent before opening the modal
   const handleOpenSpecs = () => {
     if (!carGroup) return;
     setSelectedGroup(carGroup);

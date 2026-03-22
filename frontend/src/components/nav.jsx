@@ -7,32 +7,29 @@ import {
 import { styled, useTheme } from '@mui/material/styles';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import MenuIcon         from '@mui/icons-material/Menu';
-import DarkModeIcon     from '@mui/icons-material/DarkMode';
-import LightModeIcon    from '@mui/icons-material/LightMode';
 
 import { useThemeMode } from '../context/ThemeContext';
 
-// ── Logo ──────────────────────────────────────────────────────────────────────
+// Responsive logo — 35px on mobile, 45px on md and up
 const LogoImage = styled('img')(({ theme }) => ({
-  height: '35px',
-  width: 'auto',
-  display: 'block',
+  height:     '35px',
+  width:      'auto',
+  display:    'block',
   transition: theme.transitions.create('transform'),
   [theme.breakpoints.up('md')]: { height: '45px' },
 }));
 
-// ── NavLink ───────────────────────────────────────────────────────────────────
+// Transparent nav link — inherits hover color from the theme's primary palette
 const NavLink = styled(Button)(({ theme }) => ({
-  color: theme.palette.text.primary,
-  fontSize: '0.95rem',
+  color:      theme.palette.text.primary,
+  fontSize:   '0.95rem',
   fontWeight: 500,
   '&:hover': {
-    color: theme.palette.primary.main,
+    color:           theme.palette.primary.main,
     backgroundColor: 'transparent',
   },
 }));
 
-// ── Componente ────────────────────────────────────────────────────────────────
 function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { mode, toggleMode }        = useThemeMode();
@@ -47,14 +44,14 @@ function NavBar() {
 
   return (
     <>
+      {/* AppBar styling (blur, border, borderRadius) comes from MuiAppBar in theme.js. */}
       <AppBar position="fixed">
         <Container maxWidth="xl">
           <Toolbar
             disableGutters
             sx={{ display: 'flex', justifyContent: 'space-between', height: { xs: '65px', md: '80px' } }}
           >
-
-            {/* IZQUIERDA: hamburguesa (móvil) / links (desktop) */}
+            {/* Left — hamburger on mobile, nav links on desktop */}
             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
               <IconButton
                 color="inherit"
@@ -73,28 +70,26 @@ function NavBar() {
               </Box>
             </Box>
 
-            {/* CENTRO: logo */}
+            {/* Center — logo, flex: 0 prevents it from stretching */}
             <Box sx={{ flex: 0, display: 'flex', justifyContent: 'center' }}>
               <a href="/">
                 <LogoImage src="/logo.png" alt="Logo" />
               </a>
             </Box>
 
-            {/* DERECHA: toggle de modo + botón contacto */}
+            {/* Right — contact button. Arrow icon hidden on xs to save space */}
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: { xs: 0.5, sm: 1.5 } }}>
-
-
-
               <Button
                 variant="contained"
                 color="primary"
                 href="#contact"
                 endIcon={<ArrowForwardIcon sx={{ display: { xs: 'none', sm: 'block' } }} />}
                 sx={{
-                  fontSize:  { xs: '0.7rem', sm: '0.85rem' },
-                  px:        { xs: 1.5, sm: 3 },
-                  minWidth:  'auto',
+                  fontSize:   { xs: '0.7rem', sm: '0.85rem' },
+                  px:         { xs: 1.5, sm: 3 },
+                  minWidth:   'auto',
                   fontWeight: 700,
+                  // On dark: white hover for max contrast. On light: darkened accent
                   '&:hover': { backgroundColor: isDark ? '#ffffff' : theme.palette.primary.dark, boxShadow: 'none' },
                 }}
               >
@@ -106,7 +101,7 @@ function NavBar() {
         </Container>
       </AppBar>
 
-      {/* Drawer móvil */}
+      {/* Mobile drawer — slides in from the left, closes on any nav item tap */}
       <Drawer
         anchor="left"
         open={mobileOpen}
@@ -142,8 +137,6 @@ function NavBar() {
               />
             </ListItem>
           ))}
-
-
         </List>
       </Drawer>
     </>

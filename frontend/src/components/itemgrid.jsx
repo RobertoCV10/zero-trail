@@ -12,6 +12,7 @@ const PLACEHOLDER_IMAGE = '/items/placeholder_car.png';
 function ItemGrid({ groups, onSelectGroup }) {
   const theme = useTheme();
 
+  // Constructs the expected image path. Falls back to PLACEHOLDER_IMAGE via onError
   const getImagePath = (manufacturer, model) => {
     const fileName = `${manufacturer} ${model}`.trim().replace(/\s+/g, ' ') + '.jpg';
     return `/items/${fileName}`;
@@ -27,15 +28,8 @@ function ItemGrid({ groups, onSelectGroup }) {
 
           return (
             <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={idx}>
-              {/*
-                Card ya recibe del theme:
-                - bgcolor (background.paper)
-                - borderRadius (radius.lg = 16px)
-                - border sutil
-                - hover con translateY(-8px) + glow solo en desktop (@media hover:hover)
-                - transition
-                No necesita sx de estilo propio.
-              */}
+              {/* Card styling (bgcolor, borderRadius, border, hover lift, transition)
+                  is fully handled by MuiCard in theme.js — no sx overrides needed */}
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardActionArea onClick={() => onSelectGroup(group)} sx={{ flexGrow: 1 }}>
 
@@ -46,29 +40,24 @@ function ItemGrid({ groups, onSelectGroup }) {
                       image={imageUrl}
                       alt={`${group.Manufacturer} ${group.Model}`}
                       sx={{
-                        objectFit: 'cover',
+                        objectFit:  'cover',
                         transition: `transform ${theme.transitions.duration.complex}ms ease`,
                         '.MuiCard-root:hover &': { transform: 'scale(1.05)' },
                       }}
                       onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
                     />
-                    {/*
-                      Chip: color="primary" + variant="filled" toma del theme
-                      (MuiChip colorPrimary: bgcolor accent, color bgBase).
-                      Solo sobreescribemos posición y tamaño de texto.
-                    */}
+                    {/* alpha(0.9) on the accent color keeps the chip readable over busy images */}
                     <Chip
                       label={`${group.years.length} Versions`}
                       size="small"
                       sx={{
-                        position:      'absolute',
-                        top:           12,
-                        right:         12,
-                        fontWeight:    800,
-                        fontSize:      '0.65rem',
-                        color: 'primary.contrastText',
-                        backdropFilter: 'blur(8px)',
-                        // Opacidad 0.9 sobre el color del theme
+                        position:        'absolute',
+                        top:             12,
+                        right:           12,
+                        fontWeight:      800,
+                        fontSize:        '0.65rem',
+                        color:           'primary.contrastText',
+                        backdropFilter:  'blur(8px)',
                         backgroundColor: alpha(theme.palette.primary.main, 0.9),
                       }}
                     />
@@ -86,6 +75,7 @@ function ItemGrid({ groups, onSelectGroup }) {
                       {group.Model}
                     </Typography>
 
+                    {/* Shows a single year if min === max, otherwise a range */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CalendarMonthIcon sx={{ fontSize: '1rem', color: 'text.disabled' }} />
                       <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -95,7 +85,7 @@ function ItemGrid({ groups, onSelectGroup }) {
                   </CardContent>
                 </CardActionArea>
 
-                {/* Divider: borderColor viene del MuiDivider del theme */}
+                {/* MuiDivider in theme.js sets borderColor — no override needed */}
                 <Divider sx={{ mx: 2 }} />
 
                 <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -4,12 +4,13 @@ import {
   Box, TextField, Button, IconButton, Paper, Typography,
   InputAdornment, useTheme, Menu, MenuItem, alpha
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import SearchIcon    from '@mui/icons-material/Search';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import NorthIcon from '@mui/icons-material/North';
-import SouthIcon from '@mui/icons-material/South';
+import NorthIcon     from '@mui/icons-material/North';
+import SouthIcon     from '@mui/icons-material/South';
 import FilterListIcon from '@mui/icons-material/FilterList';
 
+// Keys match the API's sortField param. Values are display labels
 const SORT_OPTIONS = {
   'Price_USD':       'Price',
   'Safety_Rating':   'Safety',
@@ -27,6 +28,7 @@ const SearchBar = ({
   const handleOpenMenu  = (event) => setAnchorEl(event.currentTarget);
   const handleCloseMenu = () => setAnchorEl(null);
 
+  // Resets to page 1 on every new search to avoid landing on a non-existent page
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setCurrentPage(1);
@@ -40,7 +42,7 @@ const SearchBar = ({
 
   const activeSortLabel = SORT_OPTIONS[sortField] || 'Sort';
 
-  // Alpha del accent reutilizado en varios lugares de este componente
+  // Cached here — used in three places across this component
   const accentAlpha10 = alpha(theme.palette.primary.main, 0.1);
 
   return (
@@ -50,21 +52,21 @@ const SearchBar = ({
       px:       { xs: 1, sm: 2 },
     }}>
       <form onSubmit={handleSearchSubmit}>
+        {/* Pill container — stacks vertically on mobile, single row on sm+ */}
         <Paper
           elevation={0}
           sx={{
-            display:       'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems:    'center',
-            p:             { xs: '8px', sm: '6px 6px 6px 20px' },
-            borderRadius:  { xs: '16px', sm: '50px' },
-            border:        `1px solid ${theme.palette.divider}`,
-            bgcolor:       alpha(theme.palette.background.paper, 0.8),
+            display:        'flex',
+            flexDirection:  { xs: 'column', sm: 'row' },
+            alignItems:     'center',
+            p:              { xs: '8px', sm: '6px 6px 6px 20px' },
+            borderRadius:   { xs: '16px', sm: '50px' },
+            border:         `1px solid ${theme.palette.divider}`,
+            bgcolor:        alpha(theme.palette.background.paper, 0.8),
             backdropFilter: 'blur(12px)',
-            gap:           { xs: 1, sm: 0 },
+            gap:            { xs: 1, sm: 0 },
           }}
         >
-          {/* INPUT */}
           <TextField
             fullWidth
             variant="standard"
@@ -86,18 +88,18 @@ const SearchBar = ({
             }}
           />
 
-          {/* ACCIONES: ordenar + dirección + buscar */}
+          {/* Sort controls + search button — separated by a divider on mobile */}
           <Box sx={{
-            display:         'flex',
-            alignItems:      'center',
-            justifyContent:  'space-between',
-            width:           { xs: '100%', sm: 'auto' },
-            gap:             1,
-            borderTop:       { xs: `1px solid ${theme.palette.divider}`, sm: 'none' },
+            display:        'flex',
+            alignItems:     'center',
+            justifyContent: 'space-between',
+            width:          { xs: '100%', sm: 'auto' },
+            gap:            1,
+            borderTop:      { xs: `1px solid ${theme.palette.divider}`, sm: 'none' },
             pt:              { xs: 1, sm: 0 },
           }}>
 
-            {/* SELECTOR DE ORDEN */}
+            {/* Sort field selector — two-line label on desktop, value only on mobile */}
             <Button
               onClick={handleOpenMenu}
               startIcon={<FilterListIcon sx={{ display: { xs: 'block', sm: 'none' } }} />}
@@ -107,11 +109,9 @@ const SearchBar = ({
                 px:           2,
                 color:        'text.primary',
                 minWidth:     'auto',
-                // textTransform: 'none' viene del theme (typography.button)
                 '&:hover':    { bgcolor: accentAlpha10 },
               }}
             >
-              {/* Desktop: dos líneas (label + valor) */}
               <Box sx={{ textAlign: 'left', display: { xs: 'none', sm: 'block' } }}>
                 <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 800, color: 'text.secondary' }}>
                   SORT BY
@@ -120,29 +120,25 @@ const SearchBar = ({
                   {activeSortLabel}
                 </Typography>
               </Box>
-              {/* Móvil: solo el valor */}
               <Typography variant="body2" sx={{ display: { xs: 'block', sm: 'none' }, fontWeight: 600 }}>
                 {activeSortLabel}
               </Typography>
             </Button>
 
-            {/* TOGGLE DIRECCIÓN ASC/DESC */}
+            {/* Toggles between asc and desc on each click */}
             <IconButton
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               size="small"
               sx={{
                 bgcolor:      accentAlpha10,
                 color:        'primary.main',
-                borderRadius: `${theme.shape.borderRadius * 0.67}px`, // ~8px, consistente con theme
+                borderRadius: `${theme.shape.borderRadius * 0.67}px`, // ~8px
               }}
             >
               {sortOrder === 'desc' ? <SouthIcon fontSize="small" /> : <NorthIcon fontSize="small" />}
             </IconButton>
 
-            {/* BOTÓN BUSCAR
-                variant="contained" color="primary" ya provee:
-                bgcolor, color, hover, borderRadius, minHeight, fontWeight, textTransform
-            */}
+            {/* variant="contained" color="primary" pulls bgcolor, hover, borderRadius, and minHeight from the theme */}
             <Button
               type="submit"
               variant="contained"
@@ -162,7 +158,7 @@ const SearchBar = ({
         </Paper>
       </form>
 
-      {/* MENÚ DE OPCIONES DE ORDEN */}
+      {/* Sort options dropdown — styled to match the app surface without hardcoded colors */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -172,7 +168,6 @@ const SearchBar = ({
             borderRadius: `${theme.shape.borderRadius}px`,
             mt:           1,
             boxShadow:    `0 10px 25px ${alpha('#000', 0.2)}`,
-            // background.paper y divider vienen del theme — sin hardcodear
             bgcolor:      'background.paper',
             border:       `1px solid ${theme.palette.divider}`,
           },

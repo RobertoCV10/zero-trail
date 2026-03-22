@@ -14,10 +14,10 @@ const Footer = () => {
   const theme  = useTheme();
   const accent = theme.palette.primary.main;
 
-  // Estilos de links reutilizables — centralizados para las 3 columnas
+  // Shared across all three link columns — change once to affect all nav links
   const linkStyles = {
     display:        'block',
-    color:          'text.secondary',   // #BDBDBD del theme
+    color:          'text.secondary',
     textDecoration: 'none',
     fontSize:       '0.9rem',
     mb:             1.5,
@@ -29,6 +29,7 @@ const Footer = () => {
   };
 
   return (
+    // mt: auto pushes the footer to the bottom when page content is short
     <Box
       component="footer"
       sx={{
@@ -42,7 +43,7 @@ const Footer = () => {
       <Container maxWidth="xl">
         <Grid container spacing={4}>
 
-          {/* Columna 1: Brand */}
+          {/* Col 1 — Brand */}
           <Grid item xs={12} md={4}>
             <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 800, mb: 2, letterSpacing: '-1px' }}>
               ZERO
@@ -53,6 +54,7 @@ const Footer = () => {
               Pioneering the next generation of digital experiences with sustainable and high-performance solutions.
             </Typography>
 
+            {/* Icons are mapped in display order — reorder the array to reorder the buttons */}
             <Stack direction="row" spacing={1.5}>
               {[FacebookIcon, TwitterIcon, RedditIcon, InstagramIcon].map((Icon, index) => (
                 <IconButton
@@ -75,7 +77,7 @@ const Footer = () => {
             </Stack>
           </Grid>
 
-          {/* Columna 2: Services */}
+          {/* Col 2 — Services */}
           <Grid item xs={6} sm={4} md={2}>
             <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 700, mb: 3 }}>
               Services
@@ -85,7 +87,7 @@ const Footer = () => {
             ))}
           </Grid>
 
-          {/* Columna 3: Company */}
+          {/* Col 3 — Company */}
           <Grid item xs={6} sm={4} md={2}>
             <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 700, mb: 3 }}>
               Company
@@ -95,7 +97,7 @@ const Footer = () => {
             ))}
           </Grid>
 
-          {/* Columna 4: Newsletter */}
+          {/* Col 4 — Newsletter */}
           <Grid item xs={12} md={3}>
             <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 700, mb: 3 }}>
               Stay Updated
@@ -116,10 +118,7 @@ const Footer = () => {
                   },
                 }}
               />
-              {/*
-                variant="contained" color="primary" provee del theme:
-                bgcolor: accent, color: contrastText (#000), borderRadius, hover
-              */}
+              {/* variant="contained" color="primary" pulls bgcolor, contrastText, and borderRadius from the theme */}
               <Button
                 variant="contained"
                 color="primary"
@@ -131,7 +130,7 @@ const Footer = () => {
           </Grid>
         </Grid>
 
-        {/* Bottom bar */}
+        {/* Bottom bar — copyright and legal links */}
         <Box
           sx={{
             mt:             { xs: 6, md: 8 },

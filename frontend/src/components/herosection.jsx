@@ -14,19 +14,19 @@ const heroImages = [
 
 const TRANSITION_INTERVAL = 6000;
 
-// ── Constantes de estilo locales ──────────────────────────────────────────────
-// Este hero vive sobre imágenes oscuras, por eso usa blanco puro — no el
-// sistema de colores verde de la app. Se centralizan aquí para no repetirlos.
-const WHITE        = '#ffffff';
-const WHITE_90     = 'rgba(255,255,255,0.9)';
-const WHITE_30     = 'rgba(255,255,255,0.3)';
-const WHITE_05     = 'rgba(255,255,255,0.05)';
-const BLACK        = '#000000';
+// Hero renders over dark imagery, so it uses white instead of the app's green accent
+// Centralized here to avoid repeating rgba strings across the component
+const WHITE    = '#ffffff';
+const WHITE_90 = 'rgba(255,255,255,0.9)';
+const WHITE_30 = 'rgba(255,255,255,0.3)';
+const WHITE_05 = 'rgba(255,255,255,0.05)';
+const BLACK    = '#000000';
 
 function HeroSection() {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Advances the slide every TRANSITION_INTERVAL ms. Clears on unmount
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
@@ -37,17 +37,17 @@ function HeroSection() {
   return (
     <Box
       sx={{
-        height: '100dvh',
-        width: '100%',
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'background.default', // ← theme en vez de 'black'
+        height:          '100dvh',
+        width:           '100%',
+        position:        'relative',
+        overflow:        'hidden',
+        display:         'flex',
+        alignItems:      'center',
+        justifyContent:  'center',
+        backgroundColor: 'background.default', // Fallback while images load
       }}
     >
-      {/* FONDO — Ken Burns */}
+      {/* Background slides — only the active image is visible via opacity */}
       {heroImages.map((img, index) => {
         const isActive = index === currentImageIndex;
         return (
@@ -62,6 +62,7 @@ function HeroSection() {
               opacity:            isActive ? 1 : 0,
               transition:         'opacity 2s ease-in-out',
               zIndex:             0,
+              // Ken Burns: slow zoom on the active slide for a cinematic feel
               animation:          isActive ? 'kenBurns 12s linear infinite' : 'none',
               '@keyframes kenBurns': {
                 '0%':   { transform: 'scale(1)' },
@@ -72,7 +73,7 @@ function HeroSection() {
         );
       })}
 
-      {/* OVERLAY — gradiente para legibilidad del texto */}
+      {/* Gradient overlay — improves text legibility against varying image content */}
       <Box
         sx={{
           position:   'absolute',
@@ -86,7 +87,6 @@ function HeroSection() {
         }}
       />
 
-      {/* CONTENIDO */}
       <Container
         maxWidth="lg"
         sx={{ zIndex: 2, textAlign: 'center', pt: { xs: 8, md: 0 } }}
@@ -94,13 +94,13 @@ function HeroSection() {
         <Typography
           variant="h1"
           sx={{
-            fontWeight:      900,
-            letterSpacing:   { xs: '6px', sm: '12px', md: '20px' },
-            textTransform:   'uppercase',
-            color:           WHITE,
-            fontSize:        { xs: '2.2rem', sm: '3.5rem', md: '5.5rem' },
-            mb:              2,
-            textShadow:      '0 0 30px rgba(0,0,0,0.5)',
+            fontWeight:    900,
+            letterSpacing: { xs: '6px', sm: '12px', md: '20px' },
+            textTransform: 'uppercase',
+            color:         WHITE,
+            fontSize:      { xs: '2.2rem', sm: '3.5rem', md: '5.5rem' },
+            mb:            2,
+            textShadow:    '0 0 30px rgba(0,0,0,0.5)',
           }}
         >
           CYBERTRUCK
@@ -123,11 +123,8 @@ function HeroSection() {
           Built for any planet. Tougher than tough.
         </Typography>
 
-        {/*
-          Botón especial: blanco sobre imagen oscura.
-          No usa color="primary" porque el contexto visual es distinto
-          al resto de la app — es una decisión correcta, no un error.
-        */}
+        {/* White outlined button — intentional deviation from color="primary"
+            The dark image context requires this contrast, not the green accent */}
         <Button
           variant="outlined"
           onClick={() => navigate('/tesla/cybertruck')}
@@ -154,7 +151,7 @@ function HeroSection() {
         </Button>
       </Container>
 
-      {/* INDICADORES de slide */}
+      {/* Slide indicators — active dot expands to a bar to show current position */}
       <Box
         sx={{
           position: 'absolute',

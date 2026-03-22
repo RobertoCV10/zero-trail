@@ -7,23 +7,23 @@ import SearchBar   from './searchbar';
 import ItemGrid    from './itemgrid';
 import Pagination  from './pagination';
 import GroupDialog from './groupdialog';
+import API_URL    from '../config';
 
-// ── Utilidades ────────────────────────────────────────────────────────────────
+// Formats a number as a USD price string with two decimal places
 function formatPrice(price) {
   return price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 const ITEMS_PER_PAGE = 20;
 
-// ── Componente principal ──────────────────────────────────────────────────────
 const VehicleBrowser = () => {
-  const [items,      setItems]      = useState([]);
-  const [allItems,   setAllItems]   = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState(null);
+  const [items,       setItems]       = useState([]);
+  const [allItems,    setAllItems]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages,  setTotalPages]  = useState(0);
-  // Inicialización lazy evita acceso a window en SSR (aunque el proyecto es CSR)
+  // Lazy init avoids accessing window during SSR — safe to keep even in CSR-only builds
   const [windowWidth, setWindowWidth] = useState(() => window.innerWidth);
   const [searchTerm,  setSearchTerm]  = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -32,15 +32,16 @@ const VehicleBrowser = () => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedYear,  setSelectedYear]  = useState(null);
 
-  // ── Resize listener — separado del fetch ─────────────────────────────────
+  // Passive listener — does not block scroll events
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ── Fetch de datos ────────────────────────────────────────────────────────
-// ── Fetch de datos ────────────────────────────────────────────────────────
+  // Fetch strategy splits on searchTerm:
+  // - With search: fetches all matching records (limit 10000) for client-side grouping
+  // - Without search: fetches one page at a time, pagination handled by the API
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
@@ -57,10 +58,8 @@ const VehicleBrowser = () => {
         if (sortField) params.append('sortField', sortField);
         if (sortOrder) params.append('sortOrder', sortOrder);
 
-        // --- CAMBIO AQUÍ: Usamos la URL de Render en lugar de localhost ---
-        const API_URL = "https://zero-trail-backend.onrender.com"; 
         const response = await fetch(`${API_URL}/items?${params.toString()}`);
-        
+
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
 
@@ -80,7 +79,8 @@ const VehicleBrowser = () => {
     fetchItems();
   }, [currentPage, searchTerm, sortField, sortOrder]);
 
-  // ── Agrupación en búsqueda ────────────────────────────────────────────────
+  // Groups allItems by Manufacturer+Model key, then sorts years within each group
+  // Only active when searchTerm is set — normal mode uses groupedItemsNormal instead
   const groupedItems = useMemo(() => {
     if (!searchTerm) return [];
     const groups = {};
@@ -95,20 +95,22 @@ const VehicleBrowser = () => {
     return Object.values(groups).sort((a, b) => a.Model.localeCompare(b.Model));
   }, [allItems, searchTerm]);
 
-  // ── Paginación de búsqueda (totalPages calculado en efecto separado) ───────
+  // Recalculates totalPages from the client-side group count when searching
+  // Skips the update if the value hasn't changed to avoid a render loop
   useEffect(() => {
     if (!searchTerm) return;
     const total = Math.ceil(groupedItems.length / ITEMS_PER_PAGE);
     if (total !== totalPages) setTotalPages(total);
   }, [groupedItems, searchTerm, totalPages]);
 
+  // Slices the full grouped result to the current page for rendering
   const groupedItemsPaged = useMemo(() =>
     searchTerm
       ? groupedItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
       : []
   , [groupedItems, searchTerm, currentPage]);
 
-  // ── Agrupación sin búsqueda ───────────────────────────────────────────────
+  // Same grouping logic as above, applied to the API-paginated items when not searching
   const groupedItemsNormal = useMemo(() => {
     if (searchTerm) return [];
     const groups = {};
@@ -123,14 +125,12 @@ const VehicleBrowser = () => {
     return Object.values(groups).sort((a, b) => a.Model.localeCompare(b.Model));
   }, [items, searchTerm]);
 
-  // ── Paginación ────────────────────────────────────────────────────────────
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
       setCurrentPage(newPage);
     }
   };
 
-  // ── Estados de carga y error ──────────────────────────────────────────────
   if (loading) return (
     <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
       <CircularProgress color="primary" />
@@ -143,7 +143,6 @@ const VehicleBrowser = () => {
     </Typography>
   );
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
       <SearchBar

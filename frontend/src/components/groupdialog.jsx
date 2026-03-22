@@ -7,35 +7,31 @@ import {
 import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 
-// ── COLORES SEMÁNTICOS ────────────────────────────────────────────────────────
-// Estos colores son intencionales: cada columna de la ficha técnica tiene
-// su propio acento para comunicar categoría (energía, specs, otros).
-// NO van al theme global porque solo viven en este componente.
+// Semantic accent colors for each spec column
+// Intentionally local — these do not belong in the global theme
 const SEM = {
-  red:    '#E01E1E',  // Especificaciones / precio
-  green:  '#1ee048',  // Energía / batería
-  blue:   '#1e89e0',  // Otros datos
-  yellow: '#e0cd1e',  // Data adicional (reservado)
+  red:    '#E01E1E',  // Specifications / price
+  green:  '#1ee048',  // Energy / battery
+  blue:   '#1e89e0',  // Other data
+  yellow: '#e0cd1e',  // Reserved for future use
 };
 
-// ── TIPOGRAFÍA LOCAL ──────────────────────────────────────────────────────────
-// DM Sans es la tipografía de este componente (importada en App.css).
-// Se centraliza aquí para no repetir fontFamily en cada sx={}.
+// DM Sans is scoped to this component (imported globally in App.css)
+// Centralized here to avoid repeating fontFamily on every sx={}
 const DM = "'DM Sans', 'Segoe UI', sans-serif";
 
-// Typography preconfigurado con DM Sans para uso interno
+// Pre-configured Typography with DM Sans for internal use
 const T = styled(Typography)({ fontFamily: DM });
 
-// ── TRANSITION ────────────────────────────────────────────────────────────────
 const SlideUp = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 
-// ── SUB-COMPONENTES ───────────────────────────────────────────────────────────
+// SUBCOMPONENTS 
 
+// Single labeled row with optional unit. accent=true renders the value in SEM.red
 function SpecRow({ label, value, unit, accent = false }) {
-  const theme = useTheme();
-  // Neutrales desde el theme
+  const theme  = useTheme();
   const STEEL  = theme.palette.text.secondary;
   const CHROME = theme.palette.text.primary;
   const LINE   = 'rgba(232,232,232,0.12)';
@@ -64,6 +60,7 @@ function SpecRow({ label, value, unit, accent = false }) {
   );
 }
 
+// Year selector tab. Red top bar marks the active year
 function YearButton({ label, active, onClick }) {
   const LINE_MED = 'rgba(232,232,232,0.18)';
   const STEEL    = '#A3A3A3';
@@ -92,6 +89,7 @@ function YearButton({ label, active, onClick }) {
   );
 }
 
+// Trim selector card. Arrow icon slides in on hover via the 'var-arrow' class
 function VariantButton({ item, onClick, formatPrice }) {
   const LINE_MED = 'rgba(232,232,232,0.18)';
   const STEEL    = '#A3A3A3';
@@ -99,18 +97,18 @@ function VariantButton({ item, onClick, formatPrice }) {
 
   return (
     <ButtonBase onClick={onClick} sx={{
-      width:       '100%',
-      textAlign:   'left',
-      p:           { xs: 2, md: 2.5 },
-      border:      `1px solid ${LINE_MED}`,
-      bgcolor:     'transparent',
-      display:     'flex',
+      width:         '100%',
+      textAlign:     'left',
+      p:             { xs: 2, md: 2.5 },
+      border:        `1px solid ${LINE_MED}`,
+      bgcolor:       'transparent',
+      display:       'flex',
       flexDirection: 'column',
-      alignItems:  'flex-start',
-      gap:         0.5,
-      position:    'relative',
-      overflow:    'hidden',
-      transition:  'all 0.18s ease',
+      alignItems:    'flex-start',
+      gap:           0.5,
+      position:      'relative',
+      overflow:      'hidden',
+      transition:    'all 0.18s ease',
       '&:hover':             { borderColor: CHROME, bgcolor: `${CHROME}06` },
       '&:hover .var-arrow':  { opacity: 1, transform: 'translateY(-50%) translateX(0)' },
     }}>
@@ -139,6 +137,7 @@ function VariantButton({ item, onClick, formatPrice }) {
   );
 }
 
+// Column header with a colored left-bar accent matching the column's SEM color
 function ColHeader({ label, accentColor }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
@@ -156,30 +155,31 @@ function ColHeader({ label, accentColor }) {
   );
 }
 
-// ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────────
+//  MAIN COMPONENT 
 function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelectedYear, formatPrice }) {
-  const theme    = useTheme();
+  const theme = useTheme();
   const [selectedVariant, setSelectedVariant] = useState(null);
 
-  // Neutrales desde el theme — estos SÍ van al sistema global
-  const DARK     = theme.palette.background.paper;   // #1a1a1a
-  const PANEL    = theme.palette.background.default; // #121212 (más oscuro para el dialog)
+  const DARK     = theme.palette.background.paper;
+  const PANEL    = theme.palette.background.default; // Darker than DARK — used for the dialog surface
   const STEEL    = theme.palette.text.secondary;
   const CHROME   = theme.palette.text.primary;
   const LINE_MED = 'rgba(232,232,232,0.18)';
 
+  // selectedYear can be a number (from year picker) or an item object (from useCarData)
   const selectedYearNumber = typeof selectedYear === 'number'
     ? selectedYear
     : selectedYear?.Year;
 
   const availableVariants = selectedGroup?.years.filter(y => y.Year === selectedYearNumber) || [];
 
+  // Priority: explicit object > selected variant > auto-select if only one variant exists
   let displayItem = (typeof selectedYear === 'object' && selectedYear !== null)
     ? selectedYear
     : selectedVariant;
-
   if (!displayItem && availableVariants.length === 1) displayItem = availableVariants[0];
 
+  // Clears the selected variant whenever the year changes
   useEffect(() => {
     if (!selectedYear) setSelectedVariant(null);
   }, [selectedYear]);
@@ -188,9 +188,9 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
     ? [...new Set(selectedGroup.years.map(y => y.Year))].sort((a, b) => b - a)
     : [];
 
+  // Blurs the focused element before closing to prevent the MUI aria-hidden warning
+  // that fires when focus remains on an element inside a tree marked aria-hidden
   const handleClose = () => {
-    // Mueve el foco al body ANTES de que MUI ponga aria-hidden en #root,
-    // evitando el warning "aria-hidden on focused element".
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -207,7 +207,7 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
       fullWidth
       TransitionComponent={SlideUp}
       scroll="paper"
-      disableRestoreFocus  /* evita que MUI restaure el foco mientras #root tiene aria-hidden */
+      disableRestoreFocus  /* Prevents MUI from restoring focus while #root has aria-hidden */
       PaperProps={{
         sx: {
           bgcolor:         PANEL,
@@ -218,21 +218,21 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
           my:              { xs: 2, md: 4 },
           position:        'relative',
           overflow:        'hidden',
-          // Textura sutil de líneas — efecto "hoja técnica"
+          // Subtle horizontal line texture — gives the dialog a "spec sheet" feel
           '&::after': {
-            content:      '""',
-            position:     'absolute',
-            inset:        0,
-            zIndex:       0,
+            content:       '""',
+            position:      'absolute',
+            inset:         0,
+            zIndex:        0,
             pointerEvents: 'none',
-            background:   'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.035) 2px,rgba(0,0,0,0.035) 4px)',
+            background:    'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.035) 2px,rgba(0,0,0,0.035) 4px)',
           },
         },
       }}
     >
       <DialogContent sx={{ p: 0, position: 'relative', zIndex: 1 }}>
 
-        {/* HEADER */}
+        {/* Header — red left bar mirrors the spec column accent pattern */}
         <Box sx={{ display: 'flex', alignItems: 'stretch', borderBottom: `1px solid ${LINE_MED}` }}>
           <Box sx={{ width: '3px', bgcolor: SEM.red, flexShrink: 0 }} />
           <Box sx={{ flex: 1, px: { xs: 2.5, md: 4 }, py: { xs: 2, md: 2.5 } }}>
@@ -248,22 +248,22 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', pr: { xs: 2, md: 2.5 } }}>
             <IconButton onClick={handleClose} size="small" sx={{
-              color:       CHROME,
+              color:        CHROME,
               borderRadius: 0,
-              border:      `1px solid ${LINE_MED}`,
-              bgcolor:     `${CHROME}0D`,
-              width:       32,
-              height:      32,
-              flexShrink:  0,
-              transition:  'all 0.15s',
-              '&:hover':   { bgcolor: CHROME, color: '#000', borderColor: CHROME },
+              border:       `1px solid ${LINE_MED}`,
+              bgcolor:      `${CHROME}0D`,
+              width:        32,
+              height:       32,
+              flexShrink:   0,
+              transition:   'all 0.15s',
+              '&:hover':    { bgcolor: CHROME, color: '#000', borderColor: CHROME },
             }}>
               <CloseIcon sx={{ fontSize: '0.9rem' }} />
             </IconButton>
           </Box>
         </Box>
 
-        {/* SELECTOR DE AÑO */}
+        {/* Step 1 — year selection (shown when no year is set yet) */}
         {!selectedYearNumber && (
           <Box sx={{ px: { xs: 2.5, md: 4 }, py: { xs: 3, md: 4 } }}>
             <T sx={{ fontSize: '0.75rem', color: STEEL, fontWeight: 500, mb: 2 }}>
@@ -282,7 +282,7 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
           </Box>
         )}
 
-        {/* SELECTOR DE VARIANTE */}
+        {/* Step 2 — trim selection (shown when year is set but multiple variants exist) */}
         {selectedYearNumber && availableVariants.length > 1 && !displayItem && (
           <Box sx={{ px: { xs: 2.5, md: 4 }, py: { xs: 3, md: 4 } }}>
             <T sx={{ fontSize: '0.75rem', color: STEEL, fontWeight: 500, mb: 2 }}>
@@ -298,10 +298,10 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
           </Box>
         )}
 
-        {/* PANEL DE ESPECIFICACIONES */}
+        {/* Step 3 — full spec panel (shown once a displayItem is resolved) */}
         {displayItem && (
           <>
-            {/* Badges: año + variante */}
+            {/* Year and trim badges */}
             <Box sx={{
               px: { xs: 2.5, md: 4 }, pt: { xs: 3, md: 4 }, pb: 2.5,
               display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap',
@@ -321,19 +321,19 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
               <Box sx={{ flex: 1, height: '1px', bgcolor: LINE_MED, display: { xs: 'none', sm: 'block' } }} />
             </Box>
 
-            {/* Columnas de specs */}
+            {/* Three spec columns — each topped with its SEM accent color */}
             <Box sx={{ px: { xs: 2.5, md: 4 } }}>
               <Grid container spacing={0.3}>
 
-                {/* COL 1 — Energía */}
                 <Grid item xs={12} md={4}>
                   <Box sx={{ bgcolor: DARK, p: { xs: 2.5, md: 3 }, borderTop: `2px solid ${SEM.green}` }}>
                     <ColHeader label="Energy" accentColor={SEM.green} />
-                    <SpecRow label="WLTP Range"  value={displayItem.Range_km}             unit="km"  />
-                    <SpecRow label="Battery"      value={displayItem.Battery_Capacity_kWh} unit="kWh" />
-                    <SpecRow label="Charging Time" value={displayItem.Charge_Time_hr}       unit="h"   />
+                    <SpecRow label="WLTP Range"    value={displayItem.Range_km}             unit="km"  />
+                    <SpecRow label="Battery"        value={displayItem.Battery_Capacity_kWh} unit="kWh" />
+                    <SpecRow label="Charging Time"  value={displayItem.Charge_Time_hr}       unit="h"   />
                     {displayItem.Battery_Capacity_kWh && (
                       <Box sx={{ mt: 2.5 }}>
+                        {/* Progress bar — capped at 200 kWh as a relative scale reference */}
                         <Box sx={{ height: '2px', bgcolor: LINE_MED, position: 'relative', overflow: 'hidden' }}>
                           <Box sx={{
                             position: 'absolute', left: 0, top: 0, bottom: 0,
@@ -349,32 +349,30 @@ function GroupDialog({ selectedGroup, selectedYear, setSelectedGroup, setSelecte
                   </Box>
                 </Grid>
 
-                {/* COL 2 — Especificaciones */}
                 <Grid item xs={12} md={4}>
                   <Box sx={{ bgcolor: DARK, p: { xs: 2.5, md: 3 }, borderTop: `2px solid ${SEM.red}` }}>
                     <ColHeader label="Specifications" accentColor={SEM.red} />
-                    <SpecRow label="Price"      value={`$${formatPrice(displayItem.Price_USD)}`} unit="USD" accent />
-                    <SpecRow label="Manufacture" value={displayItem.Country_of_Manufacture} />
-                    <SpecRow label="Color"       value={displayItem.Color} />
-                    <SpecRow label="Warranty"    value={displayItem.Warranty_Years} unit="years" />
+                    <SpecRow label="Price"       value={`$${formatPrice(displayItem.Price_USD)}`} unit="USD" accent />
+                    <SpecRow label="Manufacture"  value={displayItem.Country_of_Manufacture} />
+                    <SpecRow label="Color"        value={displayItem.Color} />
+                    <SpecRow label="Warranty"     value={displayItem.Warranty_Years} unit="years" />
                   </Box>
                 </Grid>
 
-                {/* COL 3 — Otros datos */}
                 <Grid item xs={12} md={4}>
                   <Box sx={{ bgcolor: DARK, p: { xs: 2.5, md: 3 }, borderTop: `2px solid ${SEM.blue}` }}>
                     <ColHeader label="Other Data" accentColor={SEM.blue} />
-                    <SpecRow label="Units Sold 2024" value={displayItem.Units_Sold_2024}           unit="units"  />
-                    <SpecRow label="Autonomy"     value={displayItem.Autonomous_Level || 'N/D'}             />
-                    <SpecRow label="Safety"     value={displayItem.Safety_Rating}              unit="/ 5"  />
-                    <SpecRow label="CO₂ Emissions" value={displayItem.CO2_Emissions_g_per_km}    unit="g/km" />
+                    <SpecRow label="Units Sold 2024" value={displayItem.Units_Sold_2024}                    unit="units" />
+                    <SpecRow label="Autonomy"         value={displayItem.Autonomous_Level || 'N/D'}                     />
+                    <SpecRow label="Safety"           value={displayItem.Safety_Rating}                     unit="/ 5"  />
+                    <SpecRow label="CO₂ Emissions"    value={displayItem.CO2_Emissions_g_per_km}            unit="g/km" />
                   </Box>
                 </Grid>
 
               </Grid>
             </Box>
 
-            {/* Footer */}
+            {/* Footer — summary label for the current selection */}
             <Box sx={{
               px:             { xs: 2.5, md: 4 },
               py:             { xs: 1.5, md: 2 },

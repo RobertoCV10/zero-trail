@@ -4,7 +4,8 @@ import { Box, IconButton, Typography, alpha, useMediaQuery, useTheme } from '@mu
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-// ─── Lógica pura ──────────────────────────────────────────────────────────────
+// Returns a centered window of page numbers clamped to [1, total]
+// Example: current=5, total=20, windowSize=5 → [3, 4, 5, 6, 7]
 function getPageWindow(current, total, windowSize) {
   const half  = Math.floor(windowSize / 2);
   const start = Math.min(Math.max(current - half, 1), Math.max(total - windowSize + 1, 1));
@@ -12,39 +13,39 @@ function getPageWindow(current, total, windowSize) {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
 
-// ─── Botón de número ──────────────────────────────────────────────────────────
+// Circular page number button. Active state: filled accent + glow ring
+// Inactive state: subtle border via ::after pseudo-element to avoid layout shift
 function PageBtn({ page, isActive, onClick, accent }) {
   return (
     <Box
       component="button"
       onClick={onClick}
       sx={{
-        cursor:          'pointer',
-        outline:         'none',
-        border:          'none',
-        borderRadius:    '50%',
-        width:           { xs: '34px', sm: '42px' },
-        height:          { xs: '34px', sm: '42px' },
-        display:         'flex',
-        alignItems:      'center',
-        justifyContent:  'center',
-        fontWeight:      800,
-        fontSize:        { xs: '0.72rem', sm: '0.88rem' },
-        flexShrink:      0,
-        position:        'relative',
-        bgcolor:         isActive ? accent : 'transparent',
-        color:           isActive ? '#000' : 'text.disabled',
-        boxShadow:       isActive
+        cursor:         'pointer',
+        outline:        'none',
+        border:         'none',
+        borderRadius:   '50%',
+        width:          { xs: '34px', sm: '42px' },
+        height:         { xs: '34px', sm: '42px' },
+        display:        'flex',
+        alignItems:     'center',
+        justifyContent: 'center',
+        fontWeight:     800,
+        fontSize:       { xs: '0.72rem', sm: '0.88rem' },
+        flexShrink:     0,
+        position:       'relative',
+        bgcolor:        isActive ? accent : 'transparent',
+        color:          isActive ? '#000' : 'text.disabled',
+        boxShadow:      isActive
           ? `0 0 18px ${alpha(accent, 0.55)}, 0 0 36px ${alpha(accent, 0.2)}`
           : 'none',
         transition: 'background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease',
-        // Borde sutil en inactivos via pseudo-elemento
         '&::after': isActive ? {} : {
-          content:      '""',
-          position:     'absolute',
-          inset:        0,
-          borderRadius: '50%',
-          border:       '1px solid rgba(255,255,255,0.1)',
+          content:       '""',
+          position:      'absolute',
+          inset:         0,
+          borderRadius:  '50%',
+          border:        '1px solid rgba(255,255,255,0.1)',
           pointerEvents: 'none',
         },
         '&:hover': isActive ? {} : {
@@ -59,7 +60,7 @@ function PageBtn({ page, isActive, onClick, accent }) {
   );
 }
 
-// ─── Separador "…" ────────────────────────────────────────────────────────────
+// Rendered between the page window and the first/last page when gaps exist
 function Ellipsis() {
   return (
     <Typography
@@ -77,19 +78,18 @@ function Ellipsis() {
   );
 }
 
-// ─── Botón de flecha ──────────────────────────────────────────────────────────
 function ArrowBtn({ onClick, disabled, accent, children }) {
   return (
     <IconButton
       onClick={onClick}
       disabled={disabled}
       sx={{
-        width:      { xs: '34px', sm: '40px' },
-        height:     { xs: '34px', sm: '40px' },
-        flexShrink: 0,
-        color:      'text.disabled',
+        width:        { xs: '34px', sm: '40px' },
+        height:       { xs: '34px', sm: '40px' },
+        flexShrink:   0,
+        color:        'text.disabled',
         borderRadius: '50%',
-        transition: 'color 0.2s ease, background-color 0.2s ease, transform 0.15s ease',
+        transition:   'color 0.2s ease, background-color 0.2s ease, transform 0.15s ease',
         '&:hover:not(.Mui-disabled)': {
           color:     accent,
           bgcolor:   alpha(accent, 0.1),
@@ -103,22 +103,25 @@ function ArrowBtn({ onClick, disabled, accent, children }) {
   );
 }
 
-// ─── Componente principal ─────────────────────────────────────────────────────
 function Pagination({ currentPage, totalPages, onPageChange }) {
   const theme    = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const accent   = theme.palette.primary.main; // #72FF13 — desde el theme
+  const accent   = theme.palette.primary.main;
 
+  // Renders nothing for single-page or empty results
   if (!totalPages || totalPages <= 1) return null;
 
+  // Mobile shows 3 page numbers, desktop shows 5
   const windowSize = isMobile ? 3 : 5;
   const pages      = getPageWindow(currentPage, totalPages, windowSize);
 
+  // Determines whether edge pages and ellipses are needed outside the window
   const showFirst        = pages[0] > 1;
   const showLast         = pages[pages.length - 1] < totalPages;
   const showPrevEllipsis = pages[0] > 2;
   const showNextEllipsis = pages[pages.length - 1] < totalPages - 1;
 
+  // Guards against redundant calls on the current page or out-of-range targets
   const go = (page) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
     onPageChange(page);
@@ -136,20 +139,20 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         px:             { xs: 1, sm: 2 },
       }}
     >
-      {/* Píldora contenedora */}
+      {/* Pill container — frosted glass finish with inner highlight and drop shadow */}
       <Box
         sx={{
-          display:     'inline-flex',
-          alignItems:  'center',
-          gap:         { xs: '4px', sm: '6px' },
-          px:          { xs: '10px', sm: '16px' },
-          py:          { xs: '6px',  sm: '8px'  },
-          borderRadius: '100px',
-          background:   'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
-          border:       '1px solid rgba(255,255,255,0.07)',
+          display:        'inline-flex',
+          alignItems:     'center',
+          gap:            { xs: '4px', sm: '6px' },
+          px:             { xs: '10px', sm: '16px' },
+          py:             { xs: '6px',  sm: '8px'  },
+          borderRadius:   '100px',
+          background:     'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+          border:         '1px solid rgba(255,255,255,0.07)',
           backdropFilter: 'blur(8px)',
-          maxWidth:     '100%',
-          boxShadow:    `inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 24px rgba(0,0,0,0.4)`,
+          maxWidth:       '100%',
+          boxShadow:      `inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 24px rgba(0,0,0,0.4)`,
         }}
       >
         <ArrowBtn onClick={() => go(currentPage - 1)} disabled={currentPage === 1} accent={accent}>
